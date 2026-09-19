@@ -1,5 +1,7 @@
 package co.edu.uniandes.clubdeportivo.inventario;
 
+import co.edu.uniandes.clubdeportivo.excepciones.InventarioInsuficienteException;
+
 public class ExistenciaInventario {
     private Producto producto;
     private UbicacionInventario ubicacion;
@@ -7,8 +9,7 @@ public class ExistenciaInventario {
 
     public ExistenciaInventario(Producto producto, UbicacionInventario ubicacion, int cantidadInicial) {
         if (cantidadInicial < 0) {
-            throw new IllegalArgumentException(
-                    "La cantidad inicial no puede ser negativa");
+            throw new InventarioInsuficienteException("No hay suficientes unidades disponibles");
         }
 
         this.producto = producto;
