@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.Scanner;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.io.IOException;
+import co.edu.uniandes.clubdeportivo.persistencia.PersistenciaClub;
 import co.edu.uniandes.clubdeportivo.ClubDeportivo;
 import co.edu.uniandes.clubdeportivo.usuarios.Socio;
 import java.time.format.DateTimeParseException;
@@ -27,12 +29,20 @@ public class ConsolaClubDeportivo {
     private Scanner scanner;
     private boolean ejecutando;
     private ArrayList<Instalacion> instalaciones;
+    private PersistenciaClub persistencia;
 
     public ConsolaClubDeportivo() {
         club = new ClubDeportivo();
         scanner = new Scanner(System.in);
         instalaciones = new ArrayList<Instalacion>();
+        persistencia = new PersistenciaClub();
         ejecutando = true;
+        try {
+            persistencia.cargar(club);
+            System.out.println("Datos cargados correctamente.");
+        } catch (IOException | RuntimeException e) {
+            System.out.println("No fue posible cargar los datos: " + e.getMessage());
+        }
     }
 
     public void ejecutar() {
@@ -44,6 +54,13 @@ public class ConsolaClubDeportivo {
             mostrarMenu();
             int opcion = leerEntero("Seleccione una opción: ");
             ejecutarOpcion(opcion);
+        }
+
+        try {
+            persistencia.guardar(club);
+            System.out.println("Datos guardados correctamente.");
+        } catch (IOException e) {
+            System.out.println("No fue posible guardar los datos: " + e.getMessage());
         }
 
         scanner.close();
