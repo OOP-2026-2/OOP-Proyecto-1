@@ -1,10 +1,10 @@
 package co.edu.uniandes.clubdeportivo.consola;
 
 import java.time.LocalDate;
-import co.edu.uniandes.clubdeportivo.usuarios.Administrador;
-import co.edu.uniandes.clubdeportivo.usuarios.Entrenador;
-import co.edu.uniandes.clubdeportivo.usuarios.Fisioterapeuta;
+import co.edu.uniandes.clubdeportivo.inventario.ArticuloTienda;
 import co.edu.uniandes.clubdeportivo.usuarios.Socio;
+import co.edu.uniandes.clubdeportivo.ventas.DetalleVenta;
+import co.edu.uniandes.clubdeportivo.ventas.VentaTienda;
 
 public class Main {
     public static void main(String[] args) {
@@ -13,26 +13,26 @@ public class Main {
                 "Samuel",
                 LocalDate.of(2007, 5, 10));
 
-        Entrenador entrenador = new Entrenador(
-                "E001",
-                "Carlos",
-                "DESC-CARLOS");
+        ArticuloTienda camiseta = new ArticuloTienda(
+                "Camiseta del club",
+                10000,
+                "Ropa");
 
-        Fisioterapeuta fisioterapeuta = new Fisioterapeuta(
-                "F001",
-                "Laura",
-                "DESC-LAURA");
+        DetalleVenta detalle = new DetalleVenta(camiseta, 2);
 
-        Administrador administrador = new Administrador(
-                "A001",
-                "Andrea");
+        VentaTienda venta = new VentaTienda(
+                LocalDate.now(),
+                socio);
 
-        socio.agregarPuntos(20);
+        venta.agregarDetalle(detalle);
+        venta.finalizarVenta(true);
 
-        System.out.println(socio);
-        System.out.println("Puntos del socio: " + socio.getPuntosFidelidad());
-        System.out.println(entrenador);
-        System.out.println(fisioterapeuta);
-        System.out.println(administrador);
+        socio.agregarPuntos(venta.getPuntosGenerados());
+
+        System.out.println("Subtotal: " + venta.getSubtotal());
+        System.out.println("Descuento: " + venta.getDescuento());
+        System.out.println("IVA: " + venta.getImpuesto());
+        System.out.println("Total: " + venta.getTotal());
+        System.out.println("Puntos: " + socio.getPuntosFidelidad());
     }
 }
