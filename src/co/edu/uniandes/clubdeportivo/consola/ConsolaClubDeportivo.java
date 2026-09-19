@@ -289,6 +289,7 @@ public class ConsolaClubDeportivo {
         }
 
         Socio socio = (Socio) usuario;
+
         System.out.print("ID de la cancha: ");
         String idCancha = scanner.nextLine();
         Instalacion instalacion = buscarInstalacion(idCancha);
@@ -296,8 +297,10 @@ public class ConsolaClubDeportivo {
         if (instalacion == null) {
             System.out.println("La cancha no existe. Se creará una cancha de pádel.");
             int capacidad = leerEntero("Capacidad máxima: ");
+
             System.out.print("¿Es techada? (s/n): ");
             boolean techada = scanner.nextLine().equalsIgnoreCase("s");
+
             instalacion = new CanchaPadel(idCancha, capacidad, techada);
             instalaciones.add(instalacion);
         }
@@ -315,14 +318,37 @@ public class ConsolaClubDeportivo {
             LocalDate fecha = LocalDate.parse(fechaTexto);
             LocalTime hora = LocalTime.parse(horaTexto);
             Modalidad modalidad = Modalidad.valueOf(modalidadTexto.toUpperCase());
+
+            if (fecha.isBefore(LocalDate.now())) {
+                System.out.println("No se pueden registrar reservas en fechas pasadas.");
+                return;
+            }
+
+            if (numeroJugadores <= 0) {
+                System.out.println("El número de jugadores debe ser mayor que cero.");
+                return;
+            }
+
+            if (modalidad == Modalidad.SENCILLOS && numeroJugadores > 2) {
+                System.out.println("La modalidad SENCILLOS permite máximo 2 jugadores.");
+                return;
+            }
+
+            if (modalidad == Modalidad.DOBLES && numeroJugadores > 4) {
+                System.out.println("La modalidad DOBLES permite máximo 4 jugadores.");
+                return;
+            }
+
             Reserva reserva = new Reserva(socio, instalacion, fecha, hora, duracion, numeroJugadores, modalidad);
             club.registrarReserva(reserva);
             System.out.println("Reserva registrada correctamente.");
             System.out.println("Horario: " + hora + " - " + reserva.calcularHoraFin());
         } catch (ReservaNoDisponibleException e) {
             System.out.println("No fue posible reservar: " + e.getMessage());
+        } catch (DateTimeParseException e) {
+            System.out.println("Fecha u hora inválida. Use AAAA-MM-DD y HH:MM.");
         } catch (IllegalArgumentException e) {
-            System.out.println("Datos inválidos. Revise la fecha, hora y modalidad.");
+            System.out.println("Modalidad inválida. Escriba SENCILLOS o DOBLES.");
         }
     }
 
