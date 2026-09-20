@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.time.LocalTime;
 import clubdeportivo.ClubDeportivo;
+import tiendaclub.TiendaClub;
 import tiendaclub.inventario.ArticuloTienda;
 import tiendaclub.inventario.ExistenciaInventario;
 import tiendaclub.inventario.MovimientoInventario;
@@ -19,56 +20,49 @@ import tiendaclub.inventario.TipoMovimiento;
 import tiendaclub.inventario.UbicacionInventario;
 import usuarios.tipos.Socio;
 import usuarios.Usuario;
-import tiendaclub.ventas.PagoMensualidad;
+import clubdeportivo.membresias.PagoMensualidad;
 import clubdeportivo.deportes.Modalidad;
-import clubdeportivo.instalaciones.CanchaConjunto;
-import clubdeportivo.instalaciones.CanchaPadel;
-import clubdeportivo.instalaciones.CanchaTenis;
+import clubdeportivo.instalaciones.tipos.CanchaConjunto;
+import clubdeportivo.instalaciones.tipos.CanchaPadel;
+import clubdeportivo.instalaciones.tipos.CanchaTenis;
 import clubdeportivo.instalaciones.Instalacion;
-import clubdeportivo.instalaciones.MesaTenisMesa;
+import clubdeportivo.instalaciones.tipos.MesaTenisMesa;
 import clubdeportivo.instalaciones.Reserva;
 
 public class PersistenciaClub {
     private static final Path CARPETA = Paths.get("datos");
-
     private static final Path ARCHIVO_SOCIOS = CARPETA.resolve("socios.txt");
-
     private static final Path ARCHIVO_PRODUCTOS = CARPETA.resolve("productos.txt");
-
     private static final Path ARCHIVO_INVENTARIO = CARPETA.resolve("TiendaClub.inventario.txt");
-
     private static final Path ARCHIVO_MOVIMIENTOS = CARPETA.resolve("movimientos.txt");
-
     private static final Path ARCHIVO_PAGOS = CARPETA.resolve("pagos.txt");
-
     private static final Path ARCHIVO_INSTALACIONES = CARPETA.resolve("ClubDeportivo.instalaciones.txt");
-
     private static final Path ARCHIVO_RESERVAS = CARPETA.resolve("reservas.txt");
 
-    public void guardar(ClubDeportivo club)
+    public void guardar(ClubDeportivo club, TiendaClub tienda)
             throws IOException {
 
         Files.createDirectories(CARPETA);
 
         guardarSocios(club);
-        guardarProductos(club);
-        guardarInventario(club);
-        guardarMovimientos(club);
+        guardarProductos(tienda);
+        guardarInventario(tienda);
+        guardarMovimientos(tienda);
         guardarPagos(club);
         guardarInstalaciones(club);
         guardarReservas(club);
     }
 
-    public void cargar(ClubDeportivo club)
+    public void cargar(ClubDeportivo club, TiendaClub tienda)
             throws IOException {
 
         Files.createDirectories(CARPETA);
 
         cargarSocios(club);
-        cargarProductos(club);
-        cargarInventario(club);
+        cargarProductos(tienda);
+        cargarInventario(tienda);
         cargarInstalaciones(club);
-        cargarMovimientos(club);
+        cargarMovimientos(tienda);
         cargarPagos(club);
         cargarReservas(club);
     }
@@ -96,12 +90,12 @@ public class PersistenciaClub {
         }
     }
 
-    private void guardarProductos(ClubDeportivo club)
+    private void guardarProductos(TiendaClub tienda)
             throws IOException {
 
         try (BufferedWriter escritor = Files.newBufferedWriter(ARCHIVO_PRODUCTOS)) {
 
-            for (Producto producto : club.getProductos()) {
+            for (Producto producto : tienda.getProductos()) {
 
                 if (producto instanceof ArticuloTienda) {
                     ArticuloTienda articulo = (ArticuloTienda) producto;
@@ -117,12 +111,12 @@ public class PersistenciaClub {
         }
     }
 
-    private void guardarInventario(ClubDeportivo club)
+    private void guardarInventario(TiendaClub tienda)
             throws IOException {
 
         try (BufferedWriter escritor = Files.newBufferedWriter(ARCHIVO_INVENTARIO)) {
 
-            for (ExistenciaInventario existencia : club.getExistencias()) {
+            for (ExistenciaInventario existencia : tienda.getExistencias()) {
 
                 escritor.write(
                         existencia.getProducto()
@@ -139,13 +133,13 @@ public class PersistenciaClub {
     }
 
     private void guardarMovimientos(
-            ClubDeportivo club)
+            TiendaClub tienda)
             throws IOException {
 
         try (BufferedWriter escritor = Files.newBufferedWriter(
                 ARCHIVO_MOVIMIENTOS)) {
 
-            for (MovimientoInventario movimiento : club.getMovimientosInventario()) {
+            for (MovimientoInventario movimiento : tienda.getMovimientosInventario()) {
 
                 String origen = "";
 
@@ -215,23 +209,10 @@ public class PersistenciaClub {
                 Socio socio;
 
                 if (datos.length >= 6) {
-                    socio = new Socio(
-                            datos[0],
-                            datos[1],
-                            datos[2],
-                            datos[3],
-                            LocalDate.parse(datos[4]));
+                    socio = new Socio(datos[0], datos[1], Integer.parseInt(datos[2]), datos[3], datos[4]);
 
                     socio.setPuntosFidelidad(
                             Double.parseDouble(datos[5]));
-                } else if (datos.length >= 4) {
-                    socio = new Socio(
-                            datos[0],
-                            datos[1],
-                            LocalDate.parse(datos[2]));
-
-                    socio.setPuntosFidelidad(
-                            Double.parseDouble(datos[3]));
                 } else {
                     continue;
                 }
@@ -242,7 +223,7 @@ public class PersistenciaClub {
     }
 
     private void cargarProductos(
-            ClubDeportivo club)
+            TiendaClub tienda)
             throws IOException {
 
         if (!Files.exists(ARCHIVO_PRODUCTOS)) {
@@ -271,13 +252,13 @@ public class PersistenciaClub {
                                 datos[1]),
                         datos[2]);
 
-                club.registrarProducto(producto);
+                tienda.registrarProducto(producto);
             }
         }
     }
 
     private void cargarInventario(
-            ClubDeportivo club)
+            TiendaClub tienda)
             throws IOException {
 
         if (!Files.exists(ARCHIVO_INVENTARIO)) {
@@ -303,7 +284,7 @@ public class PersistenciaClub {
                 }
 
                 Producto producto = buscarProducto(
-                        club,
+                        tienda,
                         datos[0]);
 
                 if (producto == null) {
@@ -328,13 +309,13 @@ public class PersistenciaClub {
                         ubicacion,
                         cantidad);
 
-                club.registrarExistencia(existencia);
+                tienda.registrarExistencia(existencia);
             }
         }
     }
 
     private void cargarMovimientos(
-            ClubDeportivo club)
+            TiendaClub tienda)
             throws IOException {
 
         if (!Files.exists(ARCHIVO_MOVIMIENTOS)) {
@@ -358,7 +339,7 @@ public class PersistenciaClub {
                 }
 
                 Producto producto = buscarProducto(
-                        club,
+                        tienda,
                         datos[3]);
 
                 if (producto == null) {
@@ -370,13 +351,13 @@ public class PersistenciaClub {
 
                 if (!datos[4].isEmpty()) {
                     origen = buscarUbicacion(
-                            club,
+                            tienda,
                             datos[4]);
                 }
 
                 if (!datos[5].isEmpty()) {
                     destino = buscarUbicacion(
-                            club,
+                            tienda,
                             datos[5]);
                 }
 
@@ -391,7 +372,7 @@ public class PersistenciaClub {
                         origen,
                         destino);
 
-                club.registrarMovimientoInventario(
+                tienda.registrarMovimientoInventario(
                         movimiento);
             }
         }
@@ -439,10 +420,10 @@ public class PersistenciaClub {
     }
 
     private Producto buscarProducto(
-            ClubDeportivo club,
+            TiendaClub tienda,
             String nombre) {
 
-        for (Producto producto : club.getProductos()) {
+        for (Producto producto : tienda.getProductos()) {
 
             if (producto.getNombre()
                     .equalsIgnoreCase(nombre)) {
@@ -454,10 +435,10 @@ public class PersistenciaClub {
     }
 
     private UbicacionInventario buscarUbicacion(
-            ClubDeportivo club,
+            TiendaClub tienda,
             String nombre) {
 
-        for (ExistenciaInventario existencia : club.getExistencias()) {
+        for (ExistenciaInventario existencia : tienda.getExistencias()) {
 
             if (existencia.getUbicacion()
                     .getNombre()

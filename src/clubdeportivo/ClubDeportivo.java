@@ -4,18 +4,18 @@ import java.util.ArrayList;
 
 import clubdeportivo.entrenamientos.SesionEntrenamiento;
 import utilidades.excepciones.ReservaNoDisponibleException;
-import clubdeportivo.instalaciones.CanchaPadel;
+import clubdeportivo.instalaciones.tipos.CanchaPadel;
 import clubdeportivo.instalaciones.Instalacion;
-import clubdeportivo.instalaciones.MesaTenisMesa;
+import clubdeportivo.instalaciones.tipos.MesaTenisMesa;
 import clubdeportivo.instalaciones.Reserva;
 import tiendaclub.inventario.Bebida;
 import tiendaclub.inventario.Producto;
 import usuarios.tipos.Empleado;
 import usuarios.tipos.empleados.Entrenador;
 import usuarios.tipos.empleados.Fisioterapeuta;
-import usuarios.turnos.Turno;
+import clubdeportivo.turnos.Turno;
 import usuarios.Usuario;
-import tiendaclub.ventas.PagoMensualidad;
+import clubdeportivo.membresias.PagoMensualidad;
 
 public class ClubDeportivo {
     private ArrayList<Usuario> usuarios;

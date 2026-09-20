@@ -2,7 +2,7 @@ package tiendaclub.inventario;
 
 import usuarios.tipos.empleados.Administrador;
 import usuarios.tipos.Empleado;
-import usuarios.turnos.EstadoSolicitud;
+import clubdeportivo.turnos.EstadoSolicitud;
 
 public class SugerenciaProducto {
     private String nombre;

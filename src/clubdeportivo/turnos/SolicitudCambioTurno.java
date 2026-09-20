@@ -1,4 +1,4 @@
-package usuarios.turnos;
+package clubdeportivo.turnos;
 
 import usuarios.tipos.empleados.Administrador;
 import usuarios.tipos.Empleado;

@@ -7,7 +7,7 @@ import clubdeportivo.ClubDeportivo;
 import clubdeportivo.deportes.Modalidad;
 import utilidades.excepciones.InventarioInsuficienteException;
 import utilidades.excepciones.ReservaNoDisponibleException;
-import clubdeportivo.instalaciones.CanchaPadel;
+import clubdeportivo.instalaciones.tipos.CanchaPadel;
 import clubdeportivo.instalaciones.Instalacion;
 import clubdeportivo.instalaciones.Reserva;
 import tiendaclub.inventario.ArticuloTienda;
@@ -18,25 +18,28 @@ import tiendaclub.inventario.UbicacionInventario;
 import utilidades.persistencia.PersistenciaClub;
 import usuarios.tipos.Socio;
 import usuarios.Usuario;
-import tiendaclub.ventas.DetalleVenta;
-import tiendaclub.ventas.PagoMensualidad;
+import tiendaclub.ventas.detalles.DetalleVenta;
+import clubdeportivo.membresias.PagoMensualidad;
 import tiendaclub.ventas.Venta;
-import tiendaclub.ventas.VentaTienda;
+import tiendaclub.ventas.tipos.VentaTienda;
+import tiendaclub.TiendaClub;
 
 public class ConsolaClubDeportivo {
     private ClubDeportivo club;
     private Scanner scanner;
     private boolean ejecutando;
     private PersistenciaClub persistencia;
+    private TiendaClub tienda;
 
     public ConsolaClubDeportivo() {
         club = new ClubDeportivo();
+        tienda = new TiendaClub();
         scanner = new Scanner(System.in);
         persistencia = new PersistenciaClub();
         ejecutando = true;
 
         try {
-            persistencia.cargar(club);
+            persistencia.cargar(club, tienda);
             System.out.println("Datos cargados correctamente.");
         } catch (IOException | RuntimeException e) {
             System.out.println(
@@ -126,7 +129,7 @@ public class ConsolaClubDeportivo {
 
     private void guardarDatos() {
         try {
-            persistencia.guardar(club);
+            persistencia.guardar(club, tienda);
             System.out.println(
                     "Datos guardados correctamente.");
         } catch (IOException e) {
@@ -144,22 +147,21 @@ public class ConsolaClubDeportivo {
         String nombre = leerTexto("Nombre: ");
         String login = leerTexto("Login: ");
         String contrasena = leerTexto("Contraseña: ");
-        String fechaTexto = leerTexto(
-                "Fecha de nacimiento (AAAA-MM-DD): ");
+        int fechaNacimiento = leerEntero(
+                "Año de nacimiento: ");
 
         if (!ejecutando) {
             return;
         }
 
         try {
-            LocalDate fechaNacimiento = LocalDate.parse(fechaTexto);
 
             Socio socio = new Socio(
                     id,
                     nombre,
+                    fechaNacimiento,
                     login,
-                    contrasena,
-                    fechaNacimiento);
+                    contrasena);
 
             club.registrarUsuario(socio);
 
@@ -209,13 +211,13 @@ public class ConsolaClubDeportivo {
         System.out.println();
         System.out.println("--- INVENTARIO ---");
 
-        if (club.getExistencias().isEmpty()) {
+        if (tienda.getExistencias().isEmpty()) {
             System.out.println(
                     "No hay productos registrados en el TiendaClub.inventario.");
             return;
         }
 
-        for (ExistenciaInventario existencia : club.getExistencias()) {
+        for (ExistenciaInventario existencia : tienda.getExistencias()) {
 
             System.out.println(
                     "Producto: "
@@ -249,7 +251,7 @@ public class ConsolaClubDeportivo {
                     precio,
                     categoria);
 
-            club.registrarProducto(producto);
+            tienda.registrarProducto(producto);
         }
 
         String nombreUbicacion = leerTexto(
@@ -266,7 +268,7 @@ public class ConsolaClubDeportivo {
                 "Cantidad que desea agregar: ");
 
         try {
-            club.reabastecerProducto(
+            tienda.reabastecerProducto(
                     producto,
                     ubicacion,
                     cantidad);
@@ -333,7 +335,7 @@ public class ConsolaClubDeportivo {
             venta.finalizarVenta(
                     usaCodigoCompartido);
 
-            club.procesarVenta(
+            tienda.procesarVenta(
                     venta,
                     ubicacion);
 
@@ -570,7 +572,7 @@ public class ConsolaClubDeportivo {
         System.out.println(
                 "--- MOVIMIENTOS DE INVENTARIO ---");
 
-        if (club.getMovimientosInventario().isEmpty()) {
+        if (tienda.getMovimientosInventario().isEmpty()) {
             System.out.println(
                     "No hay movimientos registrados.");
             return;
@@ -578,7 +580,7 @@ public class ConsolaClubDeportivo {
 
         int numero = 1;
 
-        for (MovimientoInventario movimiento : club.getMovimientosInventario()) {
+        for (MovimientoInventario movimiento : tienda.getMovimientosInventario()) {
 
             System.out.println();
             System.out.println(
@@ -624,7 +626,7 @@ public class ConsolaClubDeportivo {
         System.out.println(
                 "--- VENTAS REGISTRADAS ---");
 
-        if (club.getVentas().isEmpty()) {
+        if (tienda.getVentas().isEmpty()) {
             System.out.println(
                     "No hay TiendaClub.ventas registradas.");
             return;
@@ -632,7 +634,7 @@ public class ConsolaClubDeportivo {
 
         int numeroVenta = 1;
 
-        for (Venta venta : club.getVentas()) {
+        for (Venta venta : tienda.getVentas()) {
             System.out.println();
             System.out.println(
                     "Venta #" + numeroVenta);
@@ -724,7 +726,7 @@ public class ConsolaClubDeportivo {
     }
 
     private Producto buscarProducto(String nombre) {
-        for (Producto producto : club.getProductos()) {
+        for (Producto producto : tienda.getProductos()) {
             if (producto.getNombre()
                     .equalsIgnoreCase(nombre)) {
                 return producto;
@@ -737,7 +739,7 @@ public class ConsolaClubDeportivo {
     private UbicacionInventario buscarUbicacion(
             String nombre) {
 
-        for (ExistenciaInventario existencia : club.getExistencias()) {
+        for (ExistenciaInventario existencia : tienda.getExistencias()) {
 
             if (existencia.getUbicacion()
                     .getNombre()
