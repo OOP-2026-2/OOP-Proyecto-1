@@ -15,17 +15,19 @@ public abstract class Venta {
     private double impuesto;
     private double total;
     private double puntosGenerados;
+    private TipoDescuento tipoDescuento;
 
     public Venta(LocalDate fecha, Usuario comprador) {
-        if (!(comprador instanceof Socio)
-                && !(comprador instanceof Empleado)) {
-            throw new IllegalArgumentException(
-                    "El comprador debe ser un socio o un empleado");
+        if (fecha == null) {
+            throw new IllegalArgumentException("La fecha es obligatoria");
         }
-
+        if (!(comprador instanceof Socio) && !(comprador instanceof Empleado)) {
+            throw new IllegalArgumentException("El comprador debe ser un socio o un empleado");
+        }
         this.fecha = fecha;
         this.comprador = comprador;
         this.detalles = new ArrayList<DetalleVenta>();
+        this.tipoDescuento = TipoDescuento.NINGUNO;
     }
 
     public void agregarDetalle(DetalleVenta detalle) {
@@ -35,13 +37,29 @@ public abstract class Venta {
         }
     }
 
-    protected void calcularTotales(
-            double porcentajeDescuento,
-            double porcentajeImpuesto) {
+    protected void calcularTotales(double porcentajeDescuento, double porcentajeImpuesto) {
         descuento = subtotal * porcentajeDescuento;
         double baseConDescuento = subtotal - descuento;
         impuesto = baseConDescuento * porcentajeImpuesto;
         total = baseConDescuento + impuesto;
+        puntosGenerados = total * 0.02;
+    }
+
+    protected double determinarPorcentajeDescuento(boolean usaCodigoCompartido) {
+        if (comprador instanceof Empleado) {
+            tipoDescuento = TipoDescuento.EMPLEADO;
+            return 0.15;
+        }
+        if (usaCodigoCompartido) {
+            tipoDescuento = TipoDescuento.CODIGO_COMPARTIDO;
+            return 0.08;
+        }
+        tipoDescuento = TipoDescuento.NINGUNO;
+        return 0;
+    }
+
+    protected void agregarAlTotal(double valor) {
+        total += valor;
         puntosGenerados = total * 0.02;
     }
 
@@ -77,21 +95,7 @@ public abstract class Venta {
         return puntosGenerados;
     }
 
-    protected void agregarAlTotal(double valor) {
-        total += valor;
-        puntosGenerados = total * 0.02;
-    }
-
-    protected double determinarPorcentajeDescuento(
-            boolean usaCodigoCompartido) {
-        if (comprador instanceof Empleado) {
-            return 0.15;
-        }
-
-        if (usaCodigoCompartido) {
-            return 0.08;
-        }
-
-        return 0;
+    public TipoDescuento getTipoDescuento() {
+        return tipoDescuento;
     }
 }
