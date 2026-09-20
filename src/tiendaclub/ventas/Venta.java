@@ -2,6 +2,9 @@ package tiendaclub.ventas;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+
+import tiendaclub.ventas.detalles.DetalleVenta;
+import tiendaclub.ventas.detalles.TipoDescuento;
 import usuarios.tipos.Empleado;
 import usuarios.tipos.Socio;
 import usuarios.Usuario;

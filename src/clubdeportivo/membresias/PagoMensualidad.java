@@ -1,4 +1,4 @@
-package tiendaclub.ventas;
+package clubdeportivo.membresias;
 
 import java.time.LocalDate;
 import usuarios.tipos.Socio;

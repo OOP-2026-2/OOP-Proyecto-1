@@ -1,4 +1,4 @@
-package tiendaclub.ventas;
+package tiendaclub.ventas.detalles;
 
 import tiendaclub.inventario.Producto;
 

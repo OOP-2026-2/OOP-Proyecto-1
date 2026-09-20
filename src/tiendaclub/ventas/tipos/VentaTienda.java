@@ -1,6 +1,8 @@
-package tiendaclub.ventas;
+package tiendaclub.ventas.tipos;
 
 import java.time.LocalDate;
+
+import tiendaclub.ventas.Venta;
 import usuarios.Usuario;
 
 public class VentaTienda extends Venta {

@@ -3,7 +3,7 @@ package tiendaclub;
 import usuarios.tipos.Empleado;
 import usuarios.tipos.Socio;
 import tiendaclub.inventario.*;
-import tiendaclub.ventas.DetalleVenta;
+import tiendaclub.ventas.detalles.DetalleVenta;
 import tiendaclub.ventas.Venta;
 import utilidades.excepciones.InventarioInsuficienteException;
 
@@ -255,7 +255,7 @@ public class TiendaClub {
         if (venta.getComprador() instanceof Socio) {
             Socio socio = (Socio) venta.getComprador();
 
-            socio.agregarPuntos(
+            socio.agregarPuntosDeFidelidad(
                     venta.getPuntosGenerados());
         } else if (venta.getComprador() instanceof Empleado) {
 

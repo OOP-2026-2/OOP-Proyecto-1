@@ -1,4 +1,4 @@
-package usuarios.turnos;
+package clubdeportivo.turnos;
 
 public enum EstadoSolicitud {
     PENDIENTE,
