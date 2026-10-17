@@ -5,831 +5,556 @@ import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 import clubdeportivo.ClubDeportivo;
 import clubdeportivo.deportes.Modalidad;
-import utilidades.excepciones.InventarioInsuficienteException;
-import utilidades.excepciones.ReservaNoDisponibleException;
-import clubdeportivo.instalaciones.tipos.CanchaPadel;
 import clubdeportivo.instalaciones.Instalacion;
 import clubdeportivo.instalaciones.Reserva;
+import clubdeportivo.instalaciones.TipoInstalacion;
+import clubdeportivo.membresias.PagoMensualidad;
 import tiendaclub.inventario.ArticuloTienda;
 import tiendaclub.inventario.ExistenciaInventario;
 import tiendaclub.inventario.MovimientoInventario;
 import tiendaclub.inventario.Producto;
 import tiendaclub.inventario.UbicacionInventario;
-import utilidades.persistencia.PersistenciaClub;
-import usuarios.tipos.Socio;
-import usuarios.Usuario;
-import tiendaclub.ventas.detalles.DetalleVenta;
-import clubdeportivo.membresias.PagoMensualidad;
 import tiendaclub.ventas.Venta;
 import tiendaclub.ventas.tipos.VentaTienda;
-import tiendaclub.TiendaClub;
+import usuarios.Comprador;
+import usuarios.Usuario;
+import usuarios.tipos.Socio;
+import utilidades.excepciones.InventarioInsuficienteException;
+import utilidades.excepciones.ReservaNoDisponibleException;
+import utilidades.persistencia.PersistenciaClub;
 
 public class ConsolaClubDeportivo {
-    private ClubDeportivo club;
-    private Scanner scanner;
-    private boolean ejecutando;
-    private PersistenciaClub persistencia;
-    private TiendaClub tienda;
+        private ClubDeportivo club;
+        private Scanner scanner;
+        private boolean ejecutando;
+        private PersistenciaClub persistencia;
 
-    public ConsolaClubDeportivo() {
-        club = new ClubDeportivo();
-        tienda = new TiendaClub();
-        scanner = new Scanner(System.in);
-        persistencia = new PersistenciaClub();
-        ejecutando = true;
+        public ConsolaClubDeportivo() {
+                club = new ClubDeportivo();
+                scanner = new Scanner(System.in);
+                persistencia = new PersistenciaClub();
+                ejecutando = true;
 
-        try {
-            persistencia.cargar(club, tienda);
-            System.out.println("Datos cargados correctamente.");
-        } catch (IOException | RuntimeException e) {
-            System.out.println(
-                    "No fue posible cargar los datos: "
-                            + e.getMessage());
-        }
-    }
-
-    public void ejecutar() {
-        System.out.println("================================");
-        System.out.println("   CLUB DEPORTIVO SÉNECA");
-        System.out.println("================================");
-
-        while (ejecutando) {
-            mostrarMenu();
-            int opcion = leerEntero(
-                    "Seleccione una opción: ");
-
-            if (ejecutando) {
-                ejecutarOpcion(opcion);
-            }
+                try {
+                        persistencia.cargar(club);
+                        System.out.println("Datos cargados correctamente.");
+                } catch (IOException | RuntimeException e) {
+                        System.out.println("No fue posible cargar los datos: " + e.getMessage());
+                }
         }
 
-        guardarDatos();
-        scanner.close();
-        System.out.println("Programa finalizado.");
-    }
+        public void ejecutar() {
+                System.out.println("================================");
+                System.out.println("   CLUB DEPORTIVO SÉNECA");
+                System.out.println("================================");
 
-    private void mostrarMenu() {
-        System.out.println();
-        System.out.println("1. Registrar socio");
-        System.out.println("2. Consultar usuario");
-        System.out.println("3. Ver TiendaClub.inventario");
-        System.out.println("4. Reabastecer producto");
-        System.out.println("5. Registrar venta");
-        System.out.println("6. Registrar reserva");
-        System.out.println("7. Ver TiendaClub.ventas");
-        System.out.println("8. Ver reservas");
-        System.out.println("9. Registrar pago de mensualidad");
-        System.out.println("10. Ver pagos de mensualidad");
-        System.out.println("11. Ver movimientos de TiendaClub.inventario");
-        System.out.println("0. Salir");
-    }
+                while (ejecutando) {
+                        mostrarMenu();
+                        int opcion = leerEntero("Seleccione una opción: ");
 
-    private void ejecutarOpcion(int opcion) {
-        switch (opcion) {
-            case 1:
-                registrarSocio();
-                break;
-            case 2:
-                consultarUsuario();
-                break;
-            case 3:
-                verInventario();
-                break;
-            case 4:
-                reabastecerProducto();
-                break;
-            case 5:
-                registrarVenta();
-                break;
-            case 6:
-                registrarReserva();
-                break;
-            case 7:
-                verVentas();
-                break;
-            case 8:
-                verReservas();
-                break;
-            case 9:
-                registrarPagoMensualidad();
-                break;
-            case 10:
-                verPagosMensualidad();
-                break;
-            case 11:
-                verMovimientosInventario();
-                break;
-            case 0:
-                ejecutando = false;
-                break;
-            default:
-                System.out.println("Opción inválida.");
-        }
-    }
+                        if (ejecutando) {
+                                ejecutarOpcion(opcion);
+                        }
+                }
 
-    private void guardarDatos() {
-        try {
-            persistencia.guardar(club, tienda);
-            System.out.println(
-                    "Datos guardados correctamente.");
-        } catch (IOException e) {
-            System.out.println(
-                    "No fue posible guardar los datos: "
-                            + e.getMessage());
-        }
-    }
-
-    private void registrarSocio() {
-        System.out.println();
-        System.out.println("--- REGISTRAR SOCIO ---");
-
-        String id = leerTexto("ID: ");
-        String nombre = leerTexto("Nombre: ");
-        String login = leerTexto("Login: ");
-        String contrasena = leerTexto("Contraseña: ");
-        int fechaNacimiento = leerEntero(
-                "Año de nacimiento: ");
-
-        if (!ejecutando) {
-            return;
+                guardarDatos();
+                scanner.close();
+                System.out.println("Programa finalizado.");
         }
 
-        try {
-
-            Socio socio = new Socio(
-                    id,
-                    nombre,
-                    fechaNacimiento,
-                    login,
-                    contrasena);
-
-            club.registrarUsuario(socio);
-
-            System.out.println(
-                    "Socio registrado correctamente.");
-        } catch (DateTimeParseException e) {
-            System.out.println(
-                    "Fecha inválida. Use el formato AAAA-MM-DD.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(
-                    "No fue posible registrar el socio: "
-                            + e.getMessage());
-        }
-    }
-
-    private void consultarUsuario() {
-        System.out.println();
-        System.out.println("--- CONSULTAR USUARIO ---");
-
-        String id = leerTexto("ID del usuario: ");
-        Usuario usuario = club.buscarUsuario(id);
-
-        if (usuario == null) {
-            System.out.println(
-                    "No existe un usuario con ese ID.");
-            return;
+        private void mostrarMenu() {
+                System.out.println();
+                System.out.println("1. Registrar socio");
+                System.out.println("2. Consultar usuario");
+                System.out.println("3. Ver inventario");
+                System.out.println("4. Reabastecer producto");
+                System.out.println("5. Registrar venta");
+                System.out.println("6. Registrar reserva");
+                System.out.println("7. Ver ventas");
+                System.out.println("8. Ver reservas");
+                System.out.println("9. Registrar pago de mensualidad");
+                System.out.println("10. Ver pagos de mensualidad");
+                System.out.println("11. Ver movimientos de inventario");
+                System.out.println("0. Salir");
         }
 
-        System.out.println("ID: " + usuario.getId());
-        System.out.println("Nombre: " + usuario.getNombre());
-        System.out.println("Login: " + usuario.getLogin());
-
-        if (usuario instanceof Socio) {
-            Socio socio = (Socio) usuario;
-
-            System.out.println(
-                    "Fecha de nacimiento: "
-                            + socio.getFechaNacimiento());
-
-            System.out.println(
-                    "Puntos de fidelidad: "
-                            + socio.getPuntosFidelidad());
-        }
-    }
-
-    private void verInventario() {
-        System.out.println();
-        System.out.println("--- INVENTARIO ---");
-
-        if (tienda.getExistencias().isEmpty()) {
-            System.out.println(
-                    "No hay productos registrados en el TiendaClub.inventario.");
-            return;
-        }
-
-        for (ExistenciaInventario existencia : tienda.getExistencias()) {
-
-            System.out.println(
-                    "Producto: "
-                            + existencia.getProducto().getNombre()
-                            + " | Ubicación: "
-                            + existencia.getUbicacion().getNombre()
-                            + " | Cantidad: "
-                            + existencia.getCantidad());
-        }
-    }
-
-    private void reabastecerProducto() {
-        System.out.println();
-        System.out.println(
-                "--- REABASTECER PRODUCTO ---");
-
-        String nombreProducto = leerTexto(
-                "Nombre del producto: ");
-
-        Producto producto = buscarProducto(nombreProducto);
-
-        if (producto == null) {
-            System.out.println(
-                    "El producto no existe. Se creará uno nuevo.");
-
-            double precio = leerDouble("Precio: ");
-            String categoria = leerTexto("Categoría: ");
-
-            producto = new ArticuloTienda(
-                    nombreProducto,
-                    precio,
-                    categoria);
-
-            tienda.registrarProducto(producto);
+        private void ejecutarOpcion(int opcion) {
+                switch (opcion) {
+                        case 1:
+                                registrarSocio();
+                                break;
+                        case 2:
+                                consultarUsuario();
+                                break;
+                        case 3:
+                                verInventario();
+                                break;
+                        case 4:
+                                reabastecerProducto();
+                                break;
+                        case 5:
+                                registrarVenta();
+                                break;
+                        case 6:
+                                registrarReserva();
+                                break;
+                        case 7:
+                                verVentas();
+                                break;
+                        case 8:
+                                verReservas();
+                                break;
+                        case 9:
+                                registrarPagoMensualidad();
+                                break;
+                        case 10:
+                                verPagosMensualidad();
+                                break;
+                        case 11:
+                                verMovimientosInventario();
+                                break;
+                        case 0:
+                                ejecutando = false;
+                                break;
+                        default:
+                                System.out.println("Opción inválida.");
+                }
         }
 
-        String nombreUbicacion = leerTexto(
-                "Nombre de la ubicación: ");
-
-        UbicacionInventario ubicacion = buscarUbicacion(nombreUbicacion);
-
-        if (ubicacion == null) {
-            ubicacion = new UbicacionInventario(
-                    nombreUbicacion);
+        private void guardarDatos() {
+                try {
+                        persistencia.guardar(club);
+                        System.out.println("Datos guardados correctamente.");
+                } catch (IOException e) {
+                        System.out.println("No fue posible guardar los datos: " + e.getMessage());
+                }
         }
 
-        int cantidad = leerEntero(
-                "Cantidad que desea agregar: ");
+        private void registrarSocio() {
+                System.out.println();
+                System.out.println("--- REGISTRAR SOCIO ---");
 
-        try {
-            tienda.reabastecerProducto(
-                    producto,
-                    ubicacion,
-                    cantidad);
+                String id = leerTexto("ID: ");
+                String nombre = leerTexto("Nombre: ");
+                String fechaTexto = leerTexto("Fecha de nacimiento (AAAA-MM-DD): ");
+                String login = leerTexto("Login: ");
+                String contrasena = leerTexto("Contraseña: ");
 
-            System.out.println(
-                    "Inventario actualizado correctamente.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(
-                    "No fue posible actualizar el TiendaClub.inventario: "
-                            + e.getMessage());
-        }
-    }
+                if (!ejecutando) {
+                        return;
+                }
 
-    private void registrarVenta() {
-        System.out.println();
-        System.out.println("--- REGISTRAR VENTA ---");
+                try {
+                        LocalDate fechaNacimiento = LocalDate.parse(fechaTexto);
+                        Socio socio = new Socio(id, nombre, fechaNacimiento, login, contrasena);
 
-        String id = leerTexto("ID del comprador: ");
-        Usuario comprador = club.buscarUsuario(id);
-
-        if (comprador == null) {
-            System.out.println(
-                    "No existe un usuario con ese ID.");
-            return;
+                        club.registrarUsuario(socio);
+                        System.out.println("Socio registrado correctamente.");
+                } catch (DateTimeParseException e) {
+                        System.out.println("Fecha inválida. Use el formato AAAA-MM-DD.");
+                } catch (IllegalArgumentException e) {
+                        System.out.println("No fue posible registrar el socio: " + e.getMessage());
+                }
         }
 
-        String nombreProducto = leerTexto(
-                "Nombre del producto: ");
+        private void consultarUsuario() {
+                System.out.println();
+                System.out.println("--- CONSULTAR USUARIO ---");
 
-        Producto producto = buscarProducto(nombreProducto);
+                String id = leerTexto("ID del usuario: ");
+                Usuario usuario = club.buscarUsuario(id);
 
-        if (producto == null) {
-            System.out.println(
-                    "No existe ese producto.");
-            return;
+                if (usuario == null) {
+                        System.out.println("No existe un usuario con ese ID.");
+                        return;
+                }
+
+                System.out.println("ID: " + usuario.getId());
+                System.out.println("Nombre: " + usuario.getNombre());
+                System.out.println("Fecha de nacimiento: " + usuario.getFechaNacimiento());
+                System.out.println("Login: " + usuario.getLogin());
+
+                if (usuario instanceof Socio) {
+                        Socio socio = (Socio) usuario;
+                        System.out.println("Puntos de fidelidad: " + socio.getPuntosFidelidad());
+                }
         }
 
-        String nombreUbicacion = leerTexto(
-                "Nombre de la ubicación: ");
+        private void verInventario() {
+                System.out.println();
+                System.out.println("--- INVENTARIO ---");
 
-        UbicacionInventario ubicacion = buscarUbicacion(nombreUbicacion);
+                boolean hayExistencias = false;
 
-        if (ubicacion == null) {
-            System.out.println(
-                    "No existe esa ubicación.");
-            return;
+                for (UbicacionInventario ubicacion : club.getUbicacionesInventario()) {
+                        for (ExistenciaInventario existencia : ubicacion.getExistencias()) {
+                                hayExistencias = true;
+
+                                System.out.println("Producto: " + existencia.getProducto().getNombre()
+                                                + " | Ubicación: " + ubicacion.getNombre()
+                                                + " | Cantidad: " + existencia.getCantidad());
+                        }
+                }
+
+                if (!hayExistencias) {
+                        System.out.println("No hay productos registrados en el inventario.");
+                }
         }
 
-        int cantidad = leerEntero("Cantidad: ");
+        private void reabastecerProducto() {
+                System.out.println();
+                System.out.println("--- REABASTECER PRODUCTO ---");
 
-        boolean usaCodigoCompartido = leerSiNo(
-                "¿Usa código compartido? (s/n): ");
+                String nombreProducto = leerTexto("Nombre del producto: ");
+                Producto producto = club.buscarProducto(nombreProducto);
 
-        try {
-            VentaTienda venta = new VentaTienda(
-                    LocalDate.now(),
-                    comprador);
+                try {
+                        if (producto == null) {
+                                System.out.println("El producto no existe. Se creará uno nuevo.");
 
-            DetalleVenta detalle = new DetalleVenta(
-                    producto,
-                    cantidad);
+                                double precio = leerDouble("Precio: ");
+                                String categoria = leerTexto("Categoría: ");
 
-            venta.agregarDetalle(detalle);
-            venta.finalizarVenta(
-                    usaCodigoCompartido);
+                                producto = new ArticuloTienda(nombreProducto, precio, categoria);
+                                club.registrarProducto(producto);
+                        }
 
-            tienda.procesarVenta(
-                    venta,
-                    ubicacion);
+                        String nombreUbicacion = leerTexto("Nombre de la ubicación: ");
+                        UbicacionInventario ubicacion = club.buscarUbicacionInventario(nombreUbicacion);
 
-            System.out.println(
-                    "Venta registrada correctamente.");
+                        if (ubicacion == null) {
+                                ubicacion = new UbicacionInventario(nombreUbicacion);
+                                club.registrarUbicacionInventario(ubicacion);
+                        }
 
-            System.out.println(
-                    "Subtotal: " + venta.getSubtotal());
+                        int cantidad = leerEntero("Cantidad que desea agregar: ");
+                        club.reabastecerProducto(producto, ubicacion, cantidad);
 
-            System.out.println(
-                    "Descuento: " + venta.getDescuento());
-
-            System.out.println(
-                    "Tipo de descuento: "
-                            + venta.getTipoDescuento());
-
-            System.out.println(
-                    "Impuesto: " + venta.getImpuesto());
-
-            System.out.println(
-                    "Total: " + venta.getTotal());
-
-            System.out.println(
-                    "Puntos generados: "
-                            + venta.getPuntosGenerados());
-        } catch (InventarioInsuficienteException e) {
-            System.out.println(
-                    "No fue posible realizar la venta: "
-                            + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            System.out.println(
-                    "Datos inválidos: "
-                            + e.getMessage());
-        }
-    }
-
-    private void registrarReserva() {
-        System.out.println();
-        System.out.println("--- REGISTRAR RESERVA ---");
-
-        String idSocio = leerTexto("ID del socio: ");
-        Usuario usuario = club.buscarUsuario(idSocio);
-
-        if (!(usuario instanceof Socio)) {
-            System.out.println(
-                    "No existe un socio con ese ID.");
-            return;
+                        System.out.println("Inventario actualizado correctamente.");
+                } catch (IllegalArgumentException e) {
+                        System.out.println("No fue posible actualizar el inventario: " + e.getMessage());
+                }
         }
 
-        Socio socio = (Socio) usuario;
+        private void registrarVenta() {
+                System.out.println();
+                System.out.println("--- REGISTRAR VENTA ---");
 
-        String idCancha = leerTexto(
-                "ID de la cancha: ");
+                String id = leerTexto("ID del comprador: ");
+                Usuario usuario = club.buscarUsuario(id);
 
-        Instalacion instalacion = club.buscarInstalacion(idCancha);
+                if (!(usuario instanceof Comprador)) {
+                        System.out.println("No existe un comprador con ese ID.");
+                        return;
+                }
 
-        if (instalacion == null) {
-            System.out.println(
-                    "La cancha no existe. Se creará una cancha de pádel.");
+                Comprador comprador = (Comprador) usuario;
+                String nombreProducto = leerTexto("Nombre del producto: ");
+                Producto producto = club.buscarProducto(nombreProducto);
 
-            int capacidad = leerEntero(
-                    "Capacidad máxima: ");
+                if (producto == null) {
+                        System.out.println("No existe ese producto.");
+                        return;
+                }
 
-            boolean techada = leerSiNo(
-                    "¿Es techada? (s/n): ");
+                String nombreUbicacion = leerTexto("Nombre de la ubicación: ");
+                UbicacionInventario ubicacion = club.buscarUbicacionInventario(nombreUbicacion);
 
-            instalacion = new CanchaPadel(
-                    idCancha,
-                    capacidad,
-                    techada);
+                if (ubicacion == null) {
+                        System.out.println("No existe esa ubicación.");
+                        return;
+                }
 
-            club.registrarInstalacion(instalacion);
+                int cantidad = leerEntero("Cantidad: ");
+                boolean usaCodigoCompartido = leerSiNo("¿Usa código compartido? (s/n): ");
+
+                try {
+                        VentaTienda venta = new VentaTienda(LocalDate.now(), comprador);
+
+                        venta.agregarDetalle(producto, cantidad);
+                        venta.finalizarVenta(usaCodigoCompartido);
+                        club.procesarVenta(venta, ubicacion);
+                        System.out.println("Venta registrada correctamente.");
+                        mostrarDatosVenta(venta);
+                } catch (InventarioInsuficienteException e) {
+                        System.out.println("No fue posible realizar la venta: " + e.getMessage());
+                } catch (IllegalArgumentException e) {
+                        System.out.println("Datos inválidos: " + e.getMessage());
+                }
         }
 
-        String fechaTexto = leerTexto(
-                "Fecha de la reserva (AAAA-MM-DD): ");
-
-        String horaTexto = leerTexto(
-                "Hora de inicio (HH:MM): ");
-
-        int duracion = leerEntero(
-                "Duración en minutos: ");
-
-        int numeroJugadores = leerEntero(
-                "Número de jugadores: ");
-
-        String modalidadTexto = leerTexto(
-                "Modalidad (SENCILLOS/DOBLES): ");
-
-        try {
-            LocalDate fecha = LocalDate.parse(fechaTexto);
-
-            LocalTime hora = LocalTime.parse(horaTexto);
-
-            Modalidad modalidad = Modalidad.valueOf(
-                    modalidadTexto.toUpperCase());
-
-            if (fecha.isBefore(LocalDate.now())) {
-                System.out.println(
-                        "No se pueden registrar reservas en fechas pasadas.");
-                return;
-            }
-
-            if (duracion <= 0) {
-                System.out.println(
-                        "La duración debe ser mayor que cero.");
-                return;
-            }
-
-            if (numeroJugadores <= 0) {
-                System.out.println(
-                        "El número de jugadores debe ser mayor que cero.");
-                return;
-            }
-
-            if (modalidad == Modalidad.SENCILLOS
-                    && numeroJugadores != 2) {
-                System.out.println(
-                        "La modalidad SENCILLOS requiere 2 jugadores.");
-                return;
-            }
-
-            if (modalidad == Modalidad.DOBLES
-                    && numeroJugadores != 4) {
-                System.out.println(
-                        "La modalidad DOBLES requiere 4 jugadores.");
-                return;
-            }
-
-            Reserva reserva = new Reserva(
-                    socio,
-                    instalacion,
-                    fecha,
-                    hora,
-                    duracion,
-                    numeroJugadores,
-                    modalidad);
-
-            club.registrarReserva(reserva);
-
-            System.out.println(
-                    "Reserva registrada correctamente.");
-
-            System.out.println(
-                    "Horario: "
-                            + hora
-                            + " - "
-                            + reserva.calcularHoraFin());
-        } catch (ReservaNoDisponibleException e) {
-            System.out.println(
-                    "No fue posible reservar: "
-                            + e.getMessage());
-        } catch (DateTimeParseException e) {
-            System.out.println(
-                    "Fecha u hora inválida. Use AAAA-MM-DD y HH:MM.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(
-                    "Datos inválidos: "
-                            + e.getMessage());
-        }
-    }
-
-    private void registrarPagoMensualidad() {
-        System.out.println();
-        System.out.println(
-                "--- REGISTRAR PAGO DE MENSUALIDAD ---");
-
-        String id = leerTexto("ID del socio: ");
-        Usuario usuario = club.buscarUsuario(id);
-
-        if (!(usuario instanceof Socio)) {
-            System.out.println(
-                    "No existe un socio con ese ID.");
-            return;
+        private void mostrarDatosVenta(Venta venta) {
+                System.out.println("Subtotal: " + venta.getSubtotal());
+                System.out.println("Descuento: " + venta.getDescuento());
+                System.out.println("Política de descuento: "
+                                + venta.getPoliticaDescuento().getClass().getSimpleName());
+                System.out.println("Impuesto: " + venta.getImpuesto());
+                System.out.println("Total: " + venta.getTotal());
+                System.out.println("Puntos generados: " + venta.getPuntosGenerados());
         }
 
-        String periodo = leerTexto(
-                "Periodo del pago: ");
+        private void registrarReserva() {
+                System.out.println();
+                System.out.println("--- REGISTRAR RESERVA ---");
 
-        double valor = leerDouble(
-                "Valor de la mensualidad: ");
+                String idSocio = leerTexto("ID del socio: ");
+                Usuario usuario = club.buscarUsuario(idSocio);
 
-        try {
-            PagoMensualidad pago = new PagoMensualidad(
-                    LocalDate.now(),
-                    periodo,
-                    valor,
-                    (Socio) usuario);
+                if (!(usuario instanceof Socio)) {
+                        System.out.println("No existe un socio con ese ID.");
+                        return;
+                }
 
-            club.registrarPagoMensualidad(pago);
+                Socio socio = (Socio) usuario;
+                String idInstalacion = leerTexto("ID de la instalación: ");
+                Instalacion instalacion = club.buscarInstalacion(idInstalacion);
 
-            System.out.println(
-                    "Pago registrado correctamente.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(
-                    "No fue posible registrar el pago: "
-                            + e.getMessage());
-        }
-    }
+                try {
+                        if (instalacion == null) {
+                                System.out.println("La instalación no existe. Se creará una nueva.");
+                                mostrarTiposInstalacion();
 
-    private void verPagosMensualidad() {
-        System.out.println();
-        System.out.println(
-                "--- PAGOS DE MENSUALIDAD ---");
+                                String tipoTexto = leerTexto("Tipo de instalación: ").toUpperCase();
+                                TipoInstalacion tipo = TipoInstalacion.valueOf(tipoTexto);
+                                int capacidad = leerEntero("Capacidad máxima: ");
+                                boolean techada = leerSiNo("¿Es techada? (s/n): ");
 
-        if (club.getPagosMensualidad().isEmpty()) {
-            System.out.println(
-                    "No hay pagos registrados.");
-            return;
-        }
+                                instalacion = new Instalacion(idInstalacion, tipo, capacidad, techada);
+                                club.registrarInstalacion(instalacion);
+                        }
 
-        int numero = 1;
+                        String fechaTexto = leerTexto("Fecha de la reserva (AAAA-MM-DD): ");
+                        String horaTexto = leerTexto("Hora de inicio (HH:MM): ");
+                        int duracion = leerEntero("Duración en minutos: ");
+                        int numeroJugadores = leerEntero("Número de jugadores: ");
+                        String modalidadTexto = leerTexto("Modalidad (SENCILLOS/DOBLES): ");
 
-        for (PagoMensualidad pago : club.getPagosMensualidad()) {
+                        LocalDate fecha = LocalDate.parse(fechaTexto);
+                        LocalTime hora = LocalTime.parse(horaTexto);
+                        Modalidad modalidad = Modalidad.valueOf(modalidadTexto.toUpperCase());
 
-            System.out.println();
-            System.out.println("Pago #" + numero);
-            System.out.println(
-                    "Socio: "
-                            + pago.getSocio().getNombre());
-            System.out.println(
-                    "Fecha: " + pago.getFecha());
-            System.out.println(
-                    "Periodo: " + pago.getPeriodo());
-            System.out.println(
-                    "Valor: " + pago.getValor());
+                        Reserva reserva = new Reserva(socio, instalacion, fecha, hora,
+                                        duracion, numeroJugadores, modalidad);
 
-            numero++;
-        }
-    }
+                        club.registrarReserva(reserva);
 
-    private void verMovimientosInventario() {
-        System.out.println();
-        System.out.println(
-                "--- MOVIMIENTOS DE INVENTARIO ---");
-
-        if (tienda.getMovimientosInventario().isEmpty()) {
-            System.out.println(
-                    "No hay movimientos registrados.");
-            return;
+                        System.out.println("Reserva registrada correctamente.");
+                        System.out.println("Horario: " + hora + " - " + reserva.calcularHoraFin());
+                } catch (ReservaNoDisponibleException e) {
+                        System.out.println("No fue posible reservar: " + e.getMessage());
+                } catch (DateTimeParseException e) {
+                        System.out.println("Fecha u hora inválida. Use AAAA-MM-DD y HH:MM.");
+                } catch (IllegalArgumentException e) {
+                        System.out.println("Datos inválidos: " + e.getMessage());
+                }
         }
 
-        int numero = 1;
+        private void mostrarTiposInstalacion() {
+                System.out.println("Tipos disponibles:");
 
-        for (MovimientoInventario movimiento : tienda.getMovimientosInventario()) {
-
-            System.out.println();
-            System.out.println(
-                    "Movimiento #" + numero);
-
-            System.out.println(
-                    "Fecha: "
-                            + movimiento.getFecha());
-
-            System.out.println(
-                    "Tipo: "
-                            + movimiento.getTipo());
-
-            System.out.println(
-                    "Producto: "
-                            + movimiento.getProducto()
-                                    .getNombre());
-
-            System.out.println(
-                    "Cantidad: "
-                            + movimiento.getCantidad());
-
-            if (movimiento.getOrigen() != null) {
-                System.out.println(
-                        "Origen: "
-                                + movimiento.getOrigen()
-                                        .getNombre());
-            }
-
-            if (movimiento.getDestino() != null) {
-                System.out.println(
-                        "Destino: "
-                                + movimiento.getDestino()
-                                        .getNombre());
-            }
-
-            numero++;
-        }
-    }
-
-    private void verVentas() {
-        System.out.println();
-        System.out.println(
-                "--- VENTAS REGISTRADAS ---");
-
-        if (tienda.getVentas().isEmpty()) {
-            System.out.println(
-                    "No hay TiendaClub.ventas registradas.");
-            return;
+                for (TipoInstalacion tipo : TipoInstalacion.values()) {
+                        System.out.println("- " + tipo);
+                }
         }
 
-        int numeroVenta = 1;
+        private void verVentas() {
+                System.out.println();
+                System.out.println("--- VENTAS REGISTRADAS ---");
 
-        for (Venta venta : tienda.getVentas()) {
-            System.out.println();
-            System.out.println(
-                    "Venta #" + numeroVenta);
+                if (club.getVentas().isEmpty()) {
+                        System.out.println("No hay ventas registradas.");
+                        return;
+                }
 
-            System.out.println(
-                    "Fecha: " + venta.getFecha());
+                int numero = 1;
 
-            System.out.println(
-                    "Comprador: "
-                            + venta.getComprador()
-                                    .getNombre());
-
-            System.out.println(
-                    "Subtotal: "
-                            + venta.getSubtotal());
-
-            System.out.println(
-                    "Descuento: "
-                            + venta.getDescuento());
-
-            System.out.println(
-                    "Tipo de descuento: "
-                            + venta.getTipoDescuento());
-
-            System.out.println(
-                    "Impuesto: "
-                            + venta.getImpuesto());
-
-            System.out.println(
-                    "Total: "
-                            + venta.getTotal());
-
-            System.out.println(
-                    "Puntos generados: "
-                            + venta.getPuntosGenerados());
-
-            numeroVenta++;
-        }
-    }
-
-    private void verReservas() {
-        System.out.println();
-        System.out.println(
-                "--- RESERVAS REGISTRADAS ---");
-
-        if (club.getReservas().isEmpty()) {
-            System.out.println(
-                    "No hay reservas registradas.");
-            return;
+                for (Venta venta : club.getVentas()) {
+                        System.out.println();
+                        System.out.println("Venta #" + numero);
+                        System.out.println("Fecha: " + venta.getFecha());
+                        System.out.println("Comprador: " + venta.getComprador().getNombre());
+                        mostrarDatosVenta(venta);
+                        numero++;
+                }
         }
 
-        int numeroReserva = 1;
+        private void verReservas() {
+                System.out.println();
+                System.out.println("--- RESERVAS REGISTRADAS ---");
 
-        for (Reserva reserva : club.getReservas()) {
-            System.out.println();
-            System.out.println(
-                    "Reserva #" + numeroReserva);
+                if (club.getReservas().isEmpty()) {
+                        System.out.println("No hay reservas registradas.");
+                        return;
+                }
 
-            System.out.println(
-                    "Socio: "
-                            + reserva.getSocio()
-                                    .getNombre());
+                int numero = 1;
 
-            System.out.println(
-                    "Instalación: "
-                            + reserva.getInstalacion()
-                                    .getId());
-
-            System.out.println(
-                    "Fecha: "
-                            + reserva.getFecha());
-
-            System.out.println(
-                    "Horario: "
-                            + reserva.getHoraInicio()
-                            + " - "
-                            + reserva.calcularHoraFin());
-
-            System.out.println(
-                    "Jugadores: "
-                            + reserva.getNumeroJugadores());
-
-            System.out.println(
-                    "Modalidad: "
-                            + reserva.getModalidad());
-
-            numeroReserva++;
-        }
-    }
-
-    private Producto buscarProducto(String nombre) {
-        for (Producto producto : tienda.getProductos()) {
-            if (producto.getNombre()
-                    .equalsIgnoreCase(nombre)) {
-                return producto;
-            }
+                for (Reserva reserva : club.getReservas()) {
+                        System.out.println();
+                        System.out.println("Reserva #" + numero);
+                        System.out.println("Socio: " + reserva.getSocio().getNombre());
+                        System.out.println("Instalación: " + reserva.getInstalacion().getId());
+                        System.out.println("Tipo: " + reserva.getInstalacion().getTipo());
+                        System.out.println("Fecha: " + reserva.getFecha());
+                        System.out.println("Horario: " + reserva.getHoraInicio()
+                                        + " - " + reserva.calcularHoraFin());
+                        System.out.println("Jugadores: " + reserva.getNumeroJugadores());
+                        System.out.println("Modalidad: " + reserva.getModalidad());
+                        numero++;
+                }
         }
 
-        return null;
-    }
+        private void registrarPagoMensualidad() {
+                System.out.println();
+                System.out.println("--- REGISTRAR PAGO DE MENSUALIDAD ---");
 
-    private UbicacionInventario buscarUbicacion(
-            String nombre) {
+                String id = leerTexto("ID del socio: ");
+                Usuario usuario = club.buscarUsuario(id);
 
-        for (ExistenciaInventario existencia : tienda.getExistencias()) {
+                if (!(usuario instanceof Socio)) {
+                        System.out.println("No existe un socio con ese ID.");
+                        return;
+                }
 
-            if (existencia.getUbicacion()
-                    .getNombre()
-                    .equalsIgnoreCase(nombre)) {
-                return existencia.getUbicacion();
-            }
+                String periodo = leerTexto("Periodo del pago: ");
+                double valor = leerDouble("Valor de la mensualidad: ");
+
+                try {
+                        PagoMensualidad pago = new PagoMensualidad(
+                                        LocalDate.now(), periodo, valor, (Socio) usuario);
+
+                        club.registrarPagoMensualidad(pago);
+                        System.out.println("Pago registrado correctamente.");
+                } catch (IllegalArgumentException e) {
+                        System.out.println("No fue posible registrar el pago: " + e.getMessage());
+                }
         }
 
-        return null;
-    }
+        private void verPagosMensualidad() {
+                System.out.println();
+                System.out.println("--- PAGOS DE MENSUALIDAD ---");
 
-    private String leerTexto(String mensaje) {
-        while (ejecutando) {
-            System.out.print(mensaje);
+                if (club.getPagosMensualidad().isEmpty()) {
+                        System.out.println("No hay pagos registrados.");
+                        return;
+                }
 
-            if (!scanner.hasNextLine()) {
-                ejecutando = false;
+                int numero = 1;
+
+                for (PagoMensualidad pago : club.getPagosMensualidad()) {
+                        System.out.println();
+                        System.out.println("Pago #" + numero);
+                        System.out.println("Socio: " + pago.getSocio().getNombre());
+                        System.out.println("Fecha: " + pago.getFecha());
+                        System.out.println("Periodo: " + pago.getPeriodo());
+                        System.out.println("Valor: " + pago.getValor());
+                        numero++;
+                }
+        }
+
+        private void verMovimientosInventario() {
+                System.out.println();
+                System.out.println("--- MOVIMIENTOS DE INVENTARIO ---");
+
+                if (club.getMovimientosInventario().isEmpty()) {
+                        System.out.println("No hay movimientos registrados.");
+                        return;
+                }
+
+                int numero = 1;
+
+                for (MovimientoInventario movimiento : club.getMovimientosInventario()) {
+                        System.out.println();
+                        System.out.println("Movimiento #" + numero);
+                        System.out.println("Fecha: " + movimiento.getFecha());
+                        System.out.println("Tipo: " + movimiento.getTipo());
+                        System.out.println("Producto: " + movimiento.getProducto().getNombre());
+                        System.out.println("Cantidad: " + movimiento.getCantidad());
+
+                        if (movimiento.getOrigen() != null) {
+                                System.out.println("Origen: " + movimiento.getOrigen().getNombre());
+                        }
+
+                        if (movimiento.getDestino() != null) {
+                                System.out.println("Destino: " + movimiento.getDestino().getNombre());
+                        }
+
+                        numero++;
+                }
+        }
+
+        private String leerTexto(String mensaje) {
+                while (ejecutando) {
+                        System.out.print(mensaje);
+
+                        if (!scanner.hasNextLine()) {
+                                ejecutando = false;
+                                return "";
+                        }
+
+                        String entrada = scanner.nextLine().trim();
+
+                        if (!entrada.isEmpty()) {
+                                return entrada;
+                        }
+
+                        System.out.println("El valor no puede estar vacío.");
+                }
+
                 return "";
-            }
-
-            String entrada = scanner.nextLine().trim();
-
-            if (!entrada.isEmpty()) {
-                return entrada;
-            }
-
-            System.out.println(
-                    "El valor no puede estar vacío.");
         }
 
-        return "";
-    }
+        private int leerEntero(String mensaje) {
+                while (ejecutando) {
+                        String entrada = leerTexto(mensaje);
 
-    private int leerEntero(String mensaje) {
-        while (ejecutando) {
-            String entrada = leerTexto(mensaje);
+                        if (!ejecutando) {
+                                return 0;
+                        }
 
-            if (!ejecutando) {
+                        try {
+                                return Integer.parseInt(entrada);
+                        } catch (NumberFormatException e) {
+                                System.out.println("Debe escribir un número entero.");
+                        }
+                }
+
                 return 0;
-            }
-
-            try {
-                return Integer.parseInt(entrada);
-            } catch (NumberFormatException e) {
-                System.out.println(
-                        "Debe escribir un número entero.");
-            }
         }
 
-        return 0;
-    }
+        private double leerDouble(String mensaje) {
+                while (ejecutando) {
+                        String entrada = leerTexto(mensaje);
 
-    private double leerDouble(String mensaje) {
-        while (ejecutando) {
-            String entrada = leerTexto(mensaje);
+                        if (!ejecutando) {
+                                return 0;
+                        }
 
-            if (!ejecutando) {
+                        try {
+                                return Double.parseDouble(entrada);
+                        } catch (NumberFormatException e) {
+                                System.out.println("Debe escribir un número válido.");
+                        }
+                }
+
                 return 0;
-            }
-
-            try {
-                return Double.parseDouble(entrada);
-            } catch (NumberFormatException e) {
-                System.out.println(
-                        "Debe escribir un número válido.");
-            }
         }
 
-        return 0;
-    }
+        private boolean leerSiNo(String mensaje) {
+                while (ejecutando) {
+                        String respuesta = leerTexto(mensaje).toLowerCase();
 
-    private boolean leerSiNo(String mensaje) {
-        while (ejecutando) {
-            String respuesta = leerTexto(mensaje).toLowerCase();
+                        if (respuesta.equals("s") || respuesta.equals("si") || respuesta.equals("sí")) {
+                                return true;
+                        }
 
-            if (respuesta.equals("s")
-                    || respuesta.equals("si")
-                    || respuesta.equals("sí")) {
-                return true;
-            }
+                        if (respuesta.equals("n") || respuesta.equals("no")) {
+                                return false;
+                        }
 
-            if (respuesta.equals("n")
-                    || respuesta.equals("no")) {
+                        System.out.println("Responda s o n.");
+                }
+
                 return false;
-            }
-
-            System.out.println(
-                    "Responda s o n.");
         }
-
-        return false;
-    }
 }

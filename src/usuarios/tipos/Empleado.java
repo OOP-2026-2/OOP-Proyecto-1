@@ -1,43 +1,81 @@
 package usuarios.tipos;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import clubdeportivo.turnos.DiaSemana;
+import clubdeportivo.turnos.SolicitudCambioTurno;
+import clubdeportivo.turnos.Turno;
+import usuarios.Comprador;
 import usuarios.Usuario;
 
-public abstract class Empleado extends Usuario {
+public abstract class Empleado extends Usuario implements Comprador {
     private final String codigoDescuento;
-    private double puntosFidelidad;
+    private ArrayList<Turno> turnos;
+    private ArrayList<SolicitudCambioTurno> solicitudesCambio;
 
-    public Empleado(String id, String nombre, int fechaNacimiento,
-                    String login, String contrasena, String codigoDescuento) {
-
+    public Empleado(String id, String nombre, LocalDate fechaNacimiento, String login, String contrasena,
+            String codigoDescuento) {
         super(id, nombre, fechaNacimiento, login, contrasena);
+        if (codigoDescuento == null || codigoDescuento.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "El código de descuento es obligatorio");
+        }
         this.codigoDescuento = codigoDescuento;
-        this.puntosFidelidad = 0;
+        this.turnos = new ArrayList<Turno>();
+        this.solicitudesCambio = new ArrayList<SolicitudCambioTurno>();
     }
 
-    //Métodos
-    public boolean redimirPuntos(double puntos) {
-        if (puntos <= 0 || puntos > puntosFidelidad) {
-            return false;
+    public void agregarTurno(Turno turno) {
+
+        if (turno == null) {
+            throw new IllegalArgumentException(
+                    "El turno no puede ser nulo");
         }
 
-        puntosFidelidad -= puntos;
-        return true;
-    }
-
-    public void agregarPuntos(double puntos) {
-        if (puntos > 0) {
-            puntosFidelidad += puntos;
+        if (!turnos.contains(turno)) {
+            turnos.add(turno);
         }
     }
 
-    //Getters
-    public String getCodigoDescuento() {return codigoDescuento;}
-    public double getPuntosFidelidad() {return puntosFidelidad;}
+    public SolicitudCambioTurno solicitarCambioTurno(
+            Turno turno,
+            DiaSemana nuevoDia,
+            LocalTime nuevaHoraInicio,
+            LocalTime nuevaHoraFin) {
 
-    //Setters
-    public void setPuntosFidelidad(double puntosFidelidad) {
-        if (puntosFidelidad >= 0) {
-            this.puntosFidelidad = puntosFidelidad;
+        if (turno == null || !turnos.contains(turno)) {
+            throw new IllegalArgumentException(
+                    "El turno no pertenece al empleado");
         }
+
+        SolicitudCambioTurno solicitud = new SolicitudCambioTurno(
+                this,
+                turno,
+                nuevoDia,
+                nuevaHoraInicio,
+                nuevaHoraFin);
+
+        solicitudesCambio.add(solicitud);
+        return solicitud;
+    }
+
+    @Override
+    public double getPorcentajeDescuento() {
+        return 0.15;
+    }
+
+    public String getCodigoDescuento() {
+        return codigoDescuento;
+    }
+
+    public ArrayList<Turno> getTurnos() {
+        return new ArrayList<Turno>(turnos);
+    }
+
+    public ArrayList<SolicitudCambioTurno> getSolicitudesCambio() {
+
+        return new ArrayList<SolicitudCambioTurno>(
+                solicitudesCambio);
     }
 }

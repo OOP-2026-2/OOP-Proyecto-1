@@ -1,65 +1,95 @@
 package usuarios;
 
+import java.time.LocalDate;
+
 public abstract class Usuario {
     private final String id;
     private final String nombre;
-    private final int fechaNacimiento;
-    private double puntosFidelidad;
+    private final LocalDate fechaNacimiento;
     private final String login;
-    private String password;
+    private String contrasena;
 
+    public Usuario(
+            String id,
+            String nombre,
+            LocalDate fechaNacimiento,
+            String login,
+            String contrasena) {
 
-    public Usuario(String id, String nombre, int fechaNacimiento, String login, String password) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "El ID es obligatorio");
+        }
+
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "El nombre es obligatorio");
+        }
+
+        if (fechaNacimiento == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de nacimiento es obligatoria");
+        }
+
+        if (login == null || login.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "El login es obligatorio");
+        }
+
+        if (contrasena == null
+                || contrasena.trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "La contraseña es obligatoria");
+        }
+
         this.id = id;
         this.nombre = nombre;
         this.fechaNacimiento = fechaNacimiento;
-        this.puntosFidelidad = 0;
         this.login = login;
-        this.password = password;
+        this.contrasena = contrasena;
     }
 
-    //Métodos
-    public boolean validarContrasena(String password) {return this.password.equals(password);}
-
-    public void cambiarContrasena(String currentPassword, String newPassword) throws IllegalArgumentException {
-
-        if (!validarContrasena(currentPassword)) {
-            throw new IllegalArgumentException("La contraseña actual es incorrecta");
-        }
-        if (newPassword == null || newPassword.trim().isEmpty()) {
-            throw new IllegalArgumentException("La nueva contraseña no puede estar vacía");
-        }
-
-        this.password = newPassword;
+    public boolean validarContrasena(String contrasena) {
+        return this.contrasena.equals(contrasena);
     }
 
-    public void agregarPuntosDeFidelidad(double puntos) {
-        if (puntos > 0) {
-            puntosFidelidad += puntos;
+    public void cambiarContrasena(
+            String contrasenaActual,
+            String nuevaContrasena) {
+
+        if (!validarContrasena(contrasenaActual)) {
+            throw new IllegalArgumentException(
+                    "La contraseña actual es incorrecta");
         }
+
+        if (nuevaContrasena == null
+                || nuevaContrasena.trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "La nueva contraseña no puede estar vacía");
+        }
+
+        this.contrasena = nuevaContrasena;
     }
 
-    public boolean redimirPuntosDeFidelidad(double puntos) {
-        if (puntos <= 0 || puntos > puntosFidelidad) {
-            return false;
-        }
-
-        puntosFidelidad -= puntos;
-        return true;
+    public String getId() {
+        return id;
     }
 
-    //Getters
-    public String getId() {return id;}
-    public String getNombre() {return nombre;}
-    public int getFechaNacimiento(){return fechaNacimiento;}
-    public String getLogin() {return login;}
-    public String getPassword() {return password;}
-    public double getPuntosFidelidad() {return puntosFidelidad;}
+    public String getNombre() {
+        return nombre;
+    }
 
-    //Setters
-    public void setPuntosFidelidad(double puntosFidelidad) {
-        if (puntosFidelidad >= 0) {
-            this.puntosFidelidad = puntosFidelidad;
-        }
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getContrasena() {
+        return contrasena;
     }
 }

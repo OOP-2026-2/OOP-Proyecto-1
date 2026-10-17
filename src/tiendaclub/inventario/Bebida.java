@@ -1,7 +1,7 @@
 package tiendaclub.inventario;
 
 public class Bebida extends Producto {
-    private boolean caliente;
+    private final boolean caliente;
 
     public Bebida(String nombre, double precio, boolean caliente) {
         super(nombre, precio);
@@ -10,5 +10,13 @@ public class Bebida extends Producto {
 
     public boolean isCaliente() {
         return caliente;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString()
+                + (caliente
+                        ? " - caliente"
+                        : " - fría");
     }
 }

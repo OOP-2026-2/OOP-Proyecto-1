@@ -2,80 +2,170 @@ package tiendaclub.ventas;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-
+import tiendaclub.inventario.Producto;
+import tiendaclub.ventas.descuentos.PoliticaDescuento;
+import tiendaclub.ventas.descuentos.SinDescuento;
 import tiendaclub.ventas.detalles.DetalleVenta;
-import tiendaclub.ventas.detalles.TipoDescuento;
-import usuarios.tipos.Empleado;
-import usuarios.tipos.Socio;
-import usuarios.Usuario;
+import usuarios.Comprador;
 
 public abstract class Venta {
-    private LocalDate fecha;
-    private Usuario comprador;
-    private ArrayList<DetalleVenta> detalles;
+
+    private final LocalDate fecha;
+    private final Comprador comprador;
+    private final ArrayList<DetalleVenta> detalles;
+    private PoliticaDescuento politicaDescuento;
     private double subtotal;
     private double descuento;
     private double impuesto;
     private double total;
     private double puntosGenerados;
-    private TipoDescuento tipoDescuento;
 
-    public Venta(LocalDate fecha, Usuario comprador) {
+    public Venta(LocalDate fecha, Comprador comprador) {
+        this(fecha, comprador, new SinDescuento());
+    }
+
+    public Venta(LocalDate fecha, Comprador comprador, PoliticaDescuento politicaDescuento) {
         if (fecha == null) {
-            throw new IllegalArgumentException("La fecha es obligatoria");
+            throw new IllegalArgumentException(
+                    "La fecha es obligatoria");
         }
-        if (!(comprador instanceof Socio) && !(comprador instanceof Empleado)) {
-            throw new IllegalArgumentException("El comprador debe ser un socio o un empleado");
+
+        if (comprador == null) {
+            throw new IllegalArgumentException(
+                    "El comprador es obligatorio");
         }
+
+        if (politicaDescuento == null) {
+            throw new IllegalArgumentException(
+                    "La política de descuento es obligatoria");
+        }
+
         this.fecha = fecha;
         this.comprador = comprador;
+        this.politicaDescuento = politicaDescuento;
         this.detalles = new ArrayList<DetalleVenta>();
-        this.tipoDescuento = TipoDescuento.NINGUNO;
     }
 
-    public void agregarDetalle(DetalleVenta detalle) {
-        if (detalle != null) {
-            detalles.add(detalle);
-            subtotal += detalle.getSubtotal();
+    public void agregarDetalle(
+            Producto producto,
+            int cantidad) {
+
+        agregarDetalle(
+                new DetalleVenta(producto, cantidad));
+    }
+
+    /*
+     * Se conserva esta sobrecarga para mantener
+     * compatibilidad con el código anterior.
+     */
+    public void agregarDetalle(
+            DetalleVenta detalle) {
+
+        if (detalle == null) {
+            throw new IllegalArgumentException(
+                    "El detalle no puede ser nulo");
         }
+
+        detalles.add(detalle);
+        recalcularTotales();
     }
 
-    protected void calcularTotales(double porcentajeDescuento, double porcentajeImpuesto) {
-        descuento = subtotal * porcentajeDescuento;
-        double baseConDescuento = subtotal - descuento;
-        impuesto = baseConDescuento * porcentajeImpuesto;
-        total = baseConDescuento + impuesto;
+    public double calcularSubtotal() {
+
+        double resultado = 0;
+
+        for (DetalleVenta detalle : detalles) {
+            resultado += detalle.calcularSubtotal();
+        }
+
+        subtotal = resultado;
+        return subtotal;
+    }
+
+    public double calcularDescuento() {
+
+        descuento = politicaDescuento.calcularDescuento(
+                calcularSubtotal());
+
+        return descuento;
+    }
+
+    public abstract double calcularImpuesto();
+
+    public double calcularTotal() {
+
+        calcularSubtotal();
+        calcularDescuento();
+        impuesto = calcularImpuesto();
+        total = subtotal - descuento + impuesto;
+        calcularPuntos();
+
+        return total;
+    }
+
+    public double calcularPuntos() {
         puntosGenerados = total * 0.02;
+        return puntosGenerados;
     }
 
-    protected double determinarPorcentajeDescuento(boolean usaCodigoCompartido) {
-        if (comprador instanceof Empleado) {
-            tipoDescuento = TipoDescuento.EMPLEADO;
-            return 0.15;
-        }
-        if (usaCodigoCompartido) {
-            tipoDescuento = TipoDescuento.CODIGO_COMPARTIDO;
-            return 0.08;
-        }
-        tipoDescuento = TipoDescuento.NINGUNO;
-        return 0;
+    protected void recalcularTotales() {
+        calcularTotal();
     }
 
-    protected void agregarAlTotal(double valor) {
-        total += valor;
-        puntosGenerados = total * 0.02;
+    protected double calcularBaseConDescuento() {
+        return calcularSubtotal()
+                - calcularDescuento();
+    }
+
+    protected void establecerImpuesto(
+            double impuesto) {
+
+        if (impuesto < 0) {
+            throw new IllegalArgumentException(
+                    "El impuesto no puede ser negativo");
+        }
+
+        this.impuesto = impuesto;
+    }
+
+    protected void establecerTotal(double total) {
+
+        if (total < 0) {
+            throw new IllegalArgumentException(
+                    "El total no puede ser negativo");
+        }
+
+        this.total = total;
+        calcularPuntos();
+    }
+
+    public void cambiarPoliticaDescuento(
+            PoliticaDescuento politicaDescuento) {
+
+        if (politicaDescuento == null) {
+            throw new IllegalArgumentException(
+                    "La política de descuento es obligatoria");
+        }
+
+        this.politicaDescuento = politicaDescuento;
+        recalcularTotales();
     }
 
     public LocalDate getFecha() {
         return fecha;
     }
 
-    public Usuario getComprador() {
+    public Comprador getComprador() {
         return comprador;
     }
 
     public ArrayList<DetalleVenta> getDetalles() {
         return new ArrayList<DetalleVenta>(detalles);
+    }
+
+    public PoliticaDescuento getPoliticaDescuento() {
+
+        return politicaDescuento;
     }
 
     public double getSubtotal() {
@@ -96,9 +186,5 @@ public abstract class Venta {
 
     public double getPuntosGenerados() {
         return puntosGenerados;
-    }
-
-    public TipoDescuento getTipoDescuento() {
-        return tipoDescuento;
     }
 }

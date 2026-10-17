@@ -1,27 +1,84 @@
 package clubdeportivo.competencias;
 
 import java.time.LocalDate;
+
 import clubdeportivo.deportes.Equipo;
+import clubdeportivo.deportes.EstadoInscripcion;
 
 public class InscripcionCompetencia {
-    private LocalDate fechaInscripcion;
-    private boolean habilitada;
-    private Equipo equipo;
     private Competencia competencia;
+    private Equipo equipo;
+    private LocalDate fechaInscripcion;
+    private EstadoInscripcion estado;
 
     public InscripcionCompetencia(LocalDate fechaInscripcion, Equipo equipo, Competencia competencia) {
+        if (fechaInscripcion == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de inscripción es obligatoria");
+        }
+
+        if (equipo == null) {
+            throw new IllegalArgumentException(
+                    "El equipo es obligatorio");
+        }
+
+        if (competencia == null) {
+            throw new IllegalArgumentException(
+                    "La competencia es obligatoria");
+        }
+
+        if (equipo.getDeporte() != competencia.getDeporte()) {
+
+            throw new IllegalArgumentException(
+                    "El equipo y la competencia deben "
+                            + "pertenecer al mismo deporte");
+        }
+
+        if (equipo.getCategoria() != competencia.getCategoria()) {
+
+            throw new IllegalArgumentException(
+                    "El equipo no pertenece a la categoría "
+                            + "de la competencia");
+        }
+
         this.fechaInscripcion = fechaInscripcion;
         this.equipo = equipo;
         this.competencia = competencia;
-        this.habilitada = true;
+        this.estado = EstadoInscripcion.ACTIVA;
+    }
+
+    public boolean estaActiva() {
+        return estado == EstadoInscripcion.ACTIVA;
+    }
+
+    public void suspender() {
+
+        if (estado == EstadoInscripcion.RETIRADA) {
+            throw new IllegalStateException(
+                    "No se puede suspender una "
+                            + "inscripción retirada");
+        }
+
+        estado = EstadoInscripcion.SUSPENDIDA;
+    }
+
+    public void reactivar() {
+
+        if (estado == EstadoInscripcion.RETIRADA) {
+            throw new IllegalStateException(
+                    "No se puede reactivar una "
+                            + "inscripción retirada");
+        }
+
+        estado = EstadoInscripcion.ACTIVA;
+    }
+
+    public void retirar() {
+        estado = EstadoInscripcion.RETIRADA;
     }
 
     public LocalDate getFechaInscripcion() {
         return fechaInscripcion;
-    }
-
-    public boolean isHabilitada() {
-        return habilitada;
     }
 
     public Equipo getEquipo() {
@@ -32,11 +89,17 @@ public class InscripcionCompetencia {
         return competencia;
     }
 
-    public void deshabilitar() {
-        habilitada = false;
+    public EstadoInscripcion getEstado() {
+        return estado;
     }
 
-    public void habilitar() {
-        habilitada = true;
+    @Override
+    public String toString() {
+
+        return equipo.getNombre()
+                + " - "
+                + competencia.getNombre()
+                + " - "
+                + estado;
     }
 }

@@ -4,16 +4,30 @@ import clubdeportivo.competencias.Partidos.Partido;
 import usuarios.tipos.Socio;
 
 public abstract class EstadisticaJugador {
-    private Socio socio;
+    private Socio jugador;
     private Partido partido;
 
-    public EstadisticaJugador(Socio socio, Partido partido) {
-        this.socio = socio;
+    public EstadisticaJugador(Socio jugador, Partido partido) {
+        if (jugador == null) {
+            throw new IllegalArgumentException(
+                    "El jugador es obligatorio");
+        }
+
+        if (partido == null) {
+            throw new IllegalArgumentException(
+                    "El partido es obligatorio");
+        }
+
+        this.jugador = jugador;
         this.partido = partido;
     }
 
-    public Socio getSocio() {
-        return socio;
+    public boolean correspondeA(Socio jugador) {
+        return this.jugador == jugador;
+    }
+
+    public Socio getJugador() {
+        return jugador;
     }
 
     public Partido getPartido() {
