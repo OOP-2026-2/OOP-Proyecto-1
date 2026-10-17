@@ -4,29 +4,26 @@ import java.util.ArrayList;
 
 public class DeporteIndividual {
     private String nombre;
-    private int maximoInstalaciones;
+    private int maximoInscripciones;
     private ArrayList<InscripcionAcademia> inscripciones;
 
-    public DeporteIndividual(String nombre, int maximoInstalaciones) {
+    public DeporteIndividual(String nombre, int maximoInscripciones) {
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "El nombre del deporte es obligatorio");
         }
 
-        if (maximoInstalaciones <= 0) {
+        if (maximoInscripciones <= 0) {
             throw new IllegalArgumentException(
-                    "El máximo de inscripciones debe ser "
-                            + "mayor que cero");
+                    "El máximo de inscripciones debe ser mayor que cero");
         }
 
         this.nombre = nombre;
-        this.maximoInstalaciones = maximoInstalaciones;
+        this.maximoInscripciones = maximoInscripciones;
         this.inscripciones = new ArrayList<InscripcionAcademia>();
     }
 
-    public void agregarInscripcion(
-            InscripcionAcademia inscripcion) {
-
+    public void agregarInscripcion(InscripcionAcademia inscripcion) {
         if (inscripcion == null) {
             throw new IllegalArgumentException(
                     "La inscripción no puede ser nula");
@@ -37,22 +34,24 @@ public class DeporteIndividual {
                     "La inscripción pertenece a otro deporte");
         }
 
-        if (inscripciones.contains(inscripcion)) {
-            throw new IllegalArgumentException(
-                    "La inscripción ya está registrada");
+        for (InscripcionAcademia existente : inscripciones) {
+            boolean mismoSocio = existente.getSocio() == inscripcion.getSocio();
+
+            if (mismoSocio && existente.estaActiva()) {
+                throw new IllegalArgumentException(
+                        "El socio ya tiene una inscripción activa en este deporte");
+            }
         }
 
         if (!permiteNuevaInscripcion()) {
             throw new IllegalStateException(
-                    "El deporte alcanzó el máximo "
-                            + "de inscripciones activas");
+                    "El deporte alcanzó el máximo de inscripciones activas");
         }
 
         inscripciones.add(inscripcion);
     }
 
     public boolean permiteNuevaInscripcion() {
-
         int cantidadActivas = 0;
 
         for (InscripcionAcademia inscripcion : inscripciones) {
@@ -61,21 +60,19 @@ public class DeporteIndividual {
             }
         }
 
-        return cantidadActivas < maximoInstalaciones;
+        return cantidadActivas < maximoInscripciones;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public int getMaximoInstalaciones() {
-        return maximoInstalaciones;
+    public int getMaximoInscripciones() {
+        return maximoInscripciones;
     }
 
     public ArrayList<InscripcionAcademia> getInscripciones() {
-
-        return new ArrayList<InscripcionAcademia>(
-                inscripciones);
+        return new ArrayList<InscripcionAcademia>(inscripciones);
     }
 
     @Override

@@ -76,10 +76,33 @@ public class InscripcionEquipo {
     }
 
     public void reactivar() {
-
         if (estado == EstadoInscripcion.RETIRADA) {
             throw new IllegalStateException(
                     "No se puede reactivar una inscripción retirada");
+        }
+
+        if (estado == EstadoInscripcion.ACTIVA) {
+            return;
+        }
+
+        if (!equipo.isActivo()) {
+            throw new IllegalStateException(
+                    "No se puede reactivar la inscripción porque el equipo está inactivo");
+        }
+
+        if (!equipo.tieneCupo()) {
+            throw new IllegalStateException(
+                    "No se puede reactivar la inscripción porque el equipo no tiene cupo");
+        }
+
+        for (InscripcionEquipo existente : equipo.getInscripciones()) {
+            boolean otraInscripcion = existente != this;
+            boolean mismoNumero = existente.getNumeroCamiseta() == numeroCamiseta;
+
+            if (otraInscripcion && mismoNumero && existente.estaActiva()) {
+                throw new IllegalStateException(
+                        "El número de camiseta ya está asignado");
+            }
         }
 
         estado = EstadoInscripcion.ACTIVA;

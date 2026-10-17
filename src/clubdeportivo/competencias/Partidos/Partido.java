@@ -2,6 +2,7 @@ package clubdeportivo.competencias.Partidos;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+
 import clubdeportivo.competencias.Estadisticas.EstadisticaJugador;
 import usuarios.tipos.Socio;
 
@@ -20,13 +21,10 @@ public abstract class Partido {
         this.fecha = fecha;
         this.estado = EstadoPartido.PROGRAMADO;
         this.marcadorFinal = null;
-
         this.estadisticas = new ArrayList<EstadisticaJugador>();
     }
 
-    public void registrarResultado(
-            String marcador) {
-
+    public void registrarResultado(String marcador) {
         if (estado == EstadoPartido.CANCELADO) {
             throw new IllegalStateException(
                     "No se puede registrar el resultado "
@@ -49,11 +47,14 @@ public abstract class Partido {
     }
 
     public void finalizar() {
-
         if (estado == EstadoPartido.CANCELADO) {
             throw new IllegalStateException(
-                    "No se puede finalizar un "
-                            + "partido cancelado");
+                    "No se puede finalizar un partido cancelado");
+        }
+
+        if (estado == EstadoPartido.FINALIZADO) {
+            throw new IllegalStateException(
+                    "El partido ya está finalizado");
         }
 
         if (marcadorFinal == null) {
@@ -66,11 +67,14 @@ public abstract class Partido {
     }
 
     public void cancelar() {
-
         if (estado == EstadoPartido.FINALIZADO) {
             throw new IllegalStateException(
-                    "No se puede cancelar un "
-                            + "partido finalizado");
+                    "No se puede cancelar un partido finalizado");
+        }
+
+        if (estado == EstadoPartido.CANCELADO) {
+            throw new IllegalStateException(
+                    "El partido ya está cancelado");
         }
 
         estado = EstadoPartido.CANCELADO;
@@ -88,10 +92,15 @@ public abstract class Partido {
                     "La estadística no puede ser nula");
         }
 
+        if (!estaFinalizado()) {
+            throw new IllegalStateException(
+                    "Las estadísticas solo pueden registrarse "
+                            + "cuando el partido esté finalizado");
+        }
+
         if (estadistica.getPartido() != this) {
             throw new IllegalArgumentException(
-                    "La estadística pertenece "
-                            + "a otro partido");
+                    "La estadística pertenece a otro partido");
         }
 
         Socio jugador = estadistica.getJugador();
@@ -113,7 +122,6 @@ public abstract class Partido {
         }
 
         for (EstadisticaJugador estadistica : estadisticas) {
-
             if (estadistica.correspondeA(jugador)) {
                 return estadistica;
             }
@@ -135,7 +143,6 @@ public abstract class Partido {
     }
 
     public ArrayList<EstadisticaJugador> getEstadisticas() {
-
         return new ArrayList<EstadisticaJugador>(
                 estadisticas);
     }

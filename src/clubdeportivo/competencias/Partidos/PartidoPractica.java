@@ -12,8 +12,10 @@ public class PartidoPractica extends Partido {
     private ArrayList<Socio> participantes;
     private Modalidad modalidad;
 
-    public PartidoPractica(LocalDate fecha, DeporteIndividual deporte, Modalidad modalidad) {
+    public PartidoPractica(LocalDate fecha, DeporteIndividual deporte,
+            Modalidad modalidad) {
         super(fecha);
+
         if (deporte == null) {
             throw new IllegalArgumentException(
                     "El deporte es obligatorio");
@@ -30,10 +32,15 @@ public class PartidoPractica extends Partido {
     }
 
     public void agregarParticipante(Socio socio) {
-
         if (socio == null) {
             throw new IllegalArgumentException(
                     "El socio no puede ser nulo");
+        }
+
+        if (getEstado() != EstadoPartido.PROGRAMADO) {
+            throw new IllegalStateException(
+                    "No se pueden agregar participantes "
+                            + "a un partido cerrado");
         }
 
         if (participantes.contains(socio)) {
@@ -52,7 +59,6 @@ public class PartidoPractica extends Partido {
                 : 4;
 
         if (participantes.size() >= maximoParticipantes) {
-
             throw new IllegalStateException(
                     "El partido ya tiene el número máximo "
                             + "de participantes");
@@ -62,9 +68,7 @@ public class PartidoPractica extends Partido {
     }
 
     private boolean estaHabilitado(Socio socio) {
-
         for (InscripcionAcademia inscripcion : deporte.getInscripciones()) {
-
             if (inscripcion.getSocio() == socio
                     && inscripcion.estaActiva()) {
 
@@ -76,7 +80,6 @@ public class PartidoPractica extends Partido {
     }
 
     public boolean cantidadParticipantesValida() {
-
         if (modalidad == Modalidad.SENCILLOS) {
             return participantes.size() == 2;
         }
@@ -88,12 +91,22 @@ public class PartidoPractica extends Partido {
         return false;
     }
 
+    @Override
+    public void finalizar() {
+        if (!cantidadParticipantesValida()) {
+            throw new IllegalStateException(
+                    "La cantidad de participantes "
+                            + "no corresponde a la modalidad");
+        }
+
+        super.finalizar();
+    }
+
     public DeporteIndividual getDeporte() {
         return deporte;
     }
 
     public ArrayList<Socio> getParticipantes() {
-
         return new ArrayList<Socio>(
                 participantes);
     }

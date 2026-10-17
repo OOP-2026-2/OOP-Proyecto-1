@@ -2,6 +2,7 @@ package clubdeportivo.competencias.Partidos;
 
 import java.time.LocalDate;
 import clubdeportivo.competencias.Competencia;
+import clubdeportivo.competencias.InscripcionCompetencia;
 import clubdeportivo.deportes.Equipo;
 
 public class PartidoOficial extends Partido {
@@ -10,13 +11,18 @@ public class PartidoOficial extends Partido {
     private String institucionRival;
     private String lugar;
 
-    public PartidoOficial(LocalDate fecha, Equipo equipo, Competencia competencia, String institucionRival,
-            String lugar) {
+    public PartidoOficial(LocalDate fecha, Equipo equipo, Competencia competencia,
+            String institucionRival, String lugar) {
         super(fecha);
 
         if (equipo == null) {
             throw new IllegalArgumentException(
                     "El equipo es obligatorio");
+        }
+
+        if (!equipo.isActivo()) {
+            throw new IllegalArgumentException(
+                    "El equipo debe estar activo");
         }
 
         if (competencia == null) {
@@ -31,7 +37,9 @@ public class PartidoOficial extends Partido {
                     "La institución rival es obligatoria");
         }
 
-        if (lugar == null || lugar.trim().isEmpty()) {
+        if (lugar == null
+                || lugar.trim().isEmpty()) {
+
             throw new IllegalArgumentException(
                     "El lugar es obligatorio");
         }
@@ -50,15 +58,23 @@ public class PartidoOficial extends Partido {
                             + "corresponder a la misma categoría");
         }
 
+        InscripcionCompetencia inscripcion = competencia.buscarInscripcion(equipo);
+
+        if (inscripcion == null
+                || !inscripcion.estaActiva()) {
+
+            throw new IllegalArgumentException(
+                    "El equipo debe tener una inscripción "
+                            + "activa en la competencia");
+        }
+
         this.equipo = equipo;
         this.competencia = competencia;
         this.institucionRival = institucionRival;
         this.lugar = lugar;
     }
 
-    public void registrarMarcador(
-            String marcador) {
-
+    public void registrarMarcador(String marcador) {
         registrarResultado(marcador);
     }
 

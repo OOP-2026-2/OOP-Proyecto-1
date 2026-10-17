@@ -8,17 +8,31 @@ public class PartidoInterno extends Partido {
     private Equipo equipoVisitante;
     private PropositoPartido proposito;
 
-    public PartidoInterno(LocalDate fecha, Equipo equipoLocal, Equipo equipoVisitante, PropositoPartido proposito) {
+    public PartidoInterno(LocalDate fecha, Equipo equipoLocal, Equipo equipoVisitante,
+            PropositoPartido proposito) {
         super(fecha);
-        if (equipoLocal == null || equipoVisitante == null) {
+
+        if (equipoLocal == null
+                || equipoVisitante == null) {
+
             throw new IllegalArgumentException(
                     "Los dos equipos son obligatorios");
         }
+
+        if (!equipoLocal.isActivo()
+                || !equipoVisitante.isActivo()) {
+
+            throw new IllegalArgumentException(
+                    "Los dos equipos deben estar activos");
+        }
+
         if (equipoLocal == equipoVisitante) {
             throw new IllegalArgumentException(
                     "Los equipos deben ser diferentes");
         }
+
         if (equipoLocal.getDeporte() != equipoVisitante.getDeporte()) {
+
             throw new IllegalArgumentException(
                     "Los equipos deben pertenecer "
                             + "al mismo deporte");

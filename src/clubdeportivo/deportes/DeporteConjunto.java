@@ -81,4 +81,9 @@ public class DeporteConjunto {
 
         return new ArrayList<Posicion>(posiciones);
     }
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }

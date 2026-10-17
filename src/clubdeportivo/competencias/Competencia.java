@@ -73,7 +73,7 @@ public class Competencia {
         this.partidos = new ArrayList<PartidoOficial>();
     }
 
-    public void inscribirEquipo(Equipo equipo) {
+    public InscripcionCompetencia inscribirEquipo(Equipo equipo) {
 
         if (equipo == null) {
             throw new IllegalArgumentException(
@@ -113,6 +113,7 @@ public class Competencia {
                 this);
 
         inscripciones.add(inscripcion);
+        return inscripcion;
     }
 
     public InscripcionCompetencia buscarInscripcion(

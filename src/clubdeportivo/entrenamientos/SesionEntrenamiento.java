@@ -5,7 +5,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import clubdeportivo.deportes.DeporteIndividual;
 import clubdeportivo.deportes.Equipo;
+import clubdeportivo.deportes.InscripcionAcademia;
+import clubdeportivo.deportes.InscripcionEquipo;
 import clubdeportivo.instalaciones.Instalacion;
+import usuarios.tipos.Socio;
 import usuarios.tipos.empleados.Entrenador;
 
 public class SesionEntrenamiento {
@@ -19,21 +22,46 @@ public class SesionEntrenamiento {
     private TipoSesion tipo;
     private final ArrayList<RegistroAsistencia> registros;
 
-    public SesionEntrenamiento(LocalDate fecha, LocalTime horaInicio, int duracionMinutos, Entrenador entrenador,
+    public SesionEntrenamiento(LocalDate fecha, LocalTime horaInicio,
+            int duracionMinutos, Entrenador entrenador,
             Instalacion instalacion) {
-        this(fecha, horaInicio, duracionMinutos, entrenador, instalacion, TipoSesion.GRUPAL);
+
+        this(fecha, horaInicio, duracionMinutos,
+                entrenador, instalacion,
+                TipoSesion.GRUPAL, true);
     }
 
-    public SesionEntrenamiento(LocalDate fecha, LocalTime horaInicio, int duracionMinutos, Entrenador entrenador,
+    public SesionEntrenamiento(LocalDate fecha, LocalTime horaInicio,
+            int duracionMinutos, Entrenador entrenador,
             Instalacion instalacion, TipoSesion tipo) {
 
-        if (fecha == null || horaInicio == null || entrenador == null || instalacion == null || tipo == null) {
+        this(fecha, horaInicio, duracionMinutos,
+                entrenador, instalacion,
+                tipo, true);
+    }
+
+    private SesionEntrenamiento(LocalDate fecha,
+            LocalTime horaInicio,
+            int duracionMinutos,
+            Entrenador entrenador,
+            Instalacion instalacion,
+            TipoSesion tipo,
+            boolean validarFecha) {
+
+        if (fecha == null || horaInicio == null
+                || entrenador == null
+                || instalacion == null
+                || tipo == null) {
+
             throw new IllegalArgumentException(
                     "Los datos de la sesión son obligatorios");
         }
 
-        if (fecha.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("No se pueden programar sesiones " + "en fechas pasadas");
+        if (validarFecha
+                && fecha.isBefore(LocalDate.now())) {
+
+            throw new IllegalArgumentException(
+                    "No se pueden programar sesiones en fechas pasadas");
         }
 
         if (duracionMinutos <= 0) {
@@ -50,12 +78,51 @@ public class SesionEntrenamiento {
         this.registros = new ArrayList<RegistroAsistencia>();
     }
 
+    public static SesionEntrenamiento crearDesdePersistencia(
+            LocalDate fecha,
+            LocalTime horaInicio,
+            int duracionMinutos,
+            Entrenador entrenador,
+            Instalacion instalacion,
+            TipoSesion tipo) {
+
+        return new SesionEntrenamiento(
+                fecha,
+                horaInicio,
+                duracionMinutos,
+                entrenador,
+                instalacion,
+                tipo,
+                false);
+    }
+
     public void asignarEquipo(Equipo equipo) {
+        if (equipo == null) {
+            throw new IllegalArgumentException(
+                    "El equipo es obligatorio");
+        }
+
+        if (!equipo.isActivo()) {
+            throw new IllegalArgumentException(
+                    "El equipo debe estar activo");
+        }
+
+        asignarEquipoInternamente(equipo);
+    }
+
+    public void asignarEquipoDesdePersistencia(
+            Equipo equipo) {
 
         if (equipo == null) {
             throw new IllegalArgumentException(
                     "El equipo es obligatorio");
         }
+
+        asignarEquipoInternamente(equipo);
+    }
+
+    private void asignarEquipoInternamente(
+            Equipo equipo) {
 
         this.equipo = equipo;
         this.deporteIndividual = null;
@@ -79,7 +146,8 @@ public class SesionEntrenamiento {
     }
 
     public LocalTime calcularHoraFin() {
-        return horaInicio.plusMinutes(duracionMinutos);
+        return horaInicio.plusMinutes(
+                duracionMinutos);
     }
 
     public boolean seCruzaCon(
@@ -96,7 +164,8 @@ public class SesionEntrenamiento {
         boolean horariosSuperpuestos = horaInicio.isBefore(
                 otra.calcularHoraFin())
                 && otra.getHoraInicio()
-                        .isBefore(calcularHoraFin());
+                        .isBefore(
+                                calcularHoraFin());
 
         if (!horariosSuperpuestos) {
             return false;
@@ -106,7 +175,8 @@ public class SesionEntrenamiento {
 
         boolean mismoEntrenador = entrenador == otra.getEntrenador();
 
-        return mismaInstalacion || mismoEntrenador;
+        return mismaInstalacion
+                || mismoEntrenador;
     }
 
     public void agregarRegistro(
@@ -122,36 +192,102 @@ public class SesionEntrenamiento {
                     "El registro pertenece a otra sesión");
         }
 
-        for (RegistroAsistencia existente : registros) {
+        if (!estaHabilitado(
+                registro.getSocio())) {
 
+            throw new IllegalArgumentException(
+                    "El socio no tiene una inscripción activa "
+                            + "para esta sesión");
+        }
+
+        for (RegistroAsistencia existente : registros) {
             if (existente.getSocio() == registro.getSocio()) {
 
                 throw new IllegalArgumentException(
-                        "El socio ya tiene un registro "
-                                + "en esta sesión");
+                        "El socio ya tiene un registro en esta sesión");
             }
         }
 
         registros.add(registro);
     }
 
+    public void agregarRegistroDesdePersistencia(
+            RegistroAsistencia registro) {
+
+        if (registro == null) {
+            throw new IllegalArgumentException(
+                    "El registro de asistencia no puede ser nulo");
+        }
+
+        if (registro.getSesion() != this) {
+            throw new IllegalArgumentException(
+                    "El registro pertenece a otra sesión");
+        }
+
+        for (RegistroAsistencia existente : registros) {
+            if (existente.getSocio() == registro.getSocio()) {
+
+                throw new IllegalArgumentException(
+                        "El socio ya tiene un registro en esta sesión");
+            }
+        }
+
+        registros.add(registro);
+    }
+
+    public boolean estaHabilitado(
+            Socio socio) {
+
+        if (socio == null) {
+            return false;
+        }
+
+        if (equipo != null) {
+            InscripcionEquipo inscripcion = equipo.buscarInscripcion(socio);
+
+            return equipo.isActivo()
+                    && inscripcion != null
+                    && inscripcion.estaActiva();
+        }
+
+        if (deporteIndividual != null) {
+            for (InscripcionAcademia inscripcion : deporteIndividual.getInscripciones()) {
+
+                if (inscripcion.getSocio() == socio
+                        && inscripcion.estaActiva()) {
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public boolean cumpleCoberturaMinima() {
+        int registrosActivos = 0;
+
+        for (RegistroAsistencia registro : registros) {
+            if (registro.getEstado() != EstadoAsistencia.AUSENTE) {
+
+                registrosActivos++;
+            }
+        }
 
         switch (tipo) {
-
             case INDIVIDUAL:
                 return deporteIndividual != null
-                        && registros.size() == 1;
+                        && registrosActivos == 1;
 
             case GRUPO_PEQUENO:
                 return deporteIndividual != null
-                        && registros.size() >= 2;
+                        && registrosActivos >= 2;
 
             case GRUPAL:
                 return equipo != null
                         && equipo.getDeporte()
                                 .cumpleMinimoJugadores(
-                                        registros.size());
+                                        registrosActivos);
 
             default:
                 return false;
@@ -191,7 +327,6 @@ public class SesionEntrenamiento {
     }
 
     public ArrayList<RegistroAsistencia> getRegistros() {
-
         return new ArrayList<RegistroAsistencia>(
                 registros);
     }

@@ -48,6 +48,11 @@ public class Equipo {
                     "La inscripción no puede ser nula");
         }
 
+        if (!activo) {
+            throw new IllegalStateException(
+                    "No se pueden registrar inscripciones en un equipo inactivo");
+        }
+
         if (inscripcion.getEquipo() != this) {
             throw new IllegalArgumentException(
                     "La inscripción pertenece a otro equipo");

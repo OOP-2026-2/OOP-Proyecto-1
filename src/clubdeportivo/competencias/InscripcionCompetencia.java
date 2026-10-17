@@ -63,11 +63,23 @@ public class InscripcionCompetencia {
     }
 
     public void reactivar() {
-
         if (estado == EstadoInscripcion.RETIRADA) {
             throw new IllegalStateException(
-                    "No se puede reactivar una "
-                            + "inscripción retirada");
+                    "No se puede reactivar una inscripción retirada");
+        }
+
+        if (estado == EstadoInscripcion.ACTIVA) {
+            return;
+        }
+
+        if (!equipo.isActivo()) {
+            throw new IllegalStateException(
+                    "No se puede reactivar la inscripción porque el equipo está inactivo");
+        }
+
+        if (!competencia.cumpleMinimoJugadores(equipo)) {
+            throw new IllegalStateException(
+                    "El equipo no cumple el mínimo de jugadores habilitados");
         }
 
         estado = EstadoInscripcion.ACTIVA;

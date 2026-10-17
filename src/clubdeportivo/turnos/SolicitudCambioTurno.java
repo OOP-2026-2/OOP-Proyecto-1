@@ -6,17 +6,19 @@ import usuarios.tipos.Empleado;
 import usuarios.tipos.empleados.Administrador;
 
 public class SolicitudCambioTurno {
-    private Empleado empleadoSolicitante;
-    private Turno turnoOriginal;
-    private LocalDate fechaSolicitud;
-    private DiaSemana nuevoDia;
-    private LocalTime nuevaHoraInicio;
-    private LocalTime nuevaHoraFin;
+    private final Empleado empleadoSolicitante;
+    private final Turno turnoOriginal;
+    private final LocalDate fechaSolicitud;
+    private final DiaSemana nuevoDia;
+    private final LocalTime nuevaHoraInicio;
+    private final LocalTime nuevaHoraFin;
     private EstadoSolicitud estado;
     private Administrador administradorDecision;
 
-    public SolicitudCambioTurno(Empleado empleadoSolicitante, Turno turnoOriginal, DiaSemana nuevoDia,
+    public SolicitudCambioTurno(Empleado empleadoSolicitante,
+            Turno turnoOriginal, DiaSemana nuevoDia,
             LocalTime nuevaHoraInicio, LocalTime nuevaHoraFin) {
+
         if (empleadoSolicitante == null) {
             throw new IllegalArgumentException(
                     "El empleado solicitante es obligatorio");
@@ -25,6 +27,13 @@ public class SolicitudCambioTurno {
         if (turnoOriginal == null) {
             throw new IllegalArgumentException(
                     "El turno original es obligatorio");
+        }
+
+        if (!empleadoSolicitante.getTurnos()
+                .contains(turnoOriginal)) {
+
+            throw new IllegalArgumentException(
+                    "El turno original no pertenece al empleado");
         }
 
         if (nuevoDia == null) {
@@ -55,17 +64,13 @@ public class SolicitudCambioTurno {
     }
 
     public void aprobar(Administrador administrador) {
-
         validarDecision(administrador);
-
         this.administradorDecision = administrador;
         this.estado = EstadoSolicitud.APROBADA;
     }
 
     public void rechazar(Administrador administrador) {
-
         validarDecision(administrador);
-
         this.administradorDecision = administrador;
         this.estado = EstadoSolicitud.RECHAZADA;
     }
@@ -82,6 +87,13 @@ public class SolicitudCambioTurno {
             throw new IllegalStateException(
                     "La solicitud ya fue decidida");
         }
+    }
+
+    public Turno crearTurnoSolicitado() {
+        return new Turno(
+                nuevoDia,
+                nuevaHoraInicio,
+                nuevaHoraFin);
     }
 
     public boolean estaPendiente() {
@@ -118,5 +130,15 @@ public class SolicitudCambioTurno {
 
     public Administrador getAdministradorDecision() {
         return administradorDecision;
+    }
+
+    @Override
+    public String toString() {
+        return empleadoSolicitante.getNombre()
+                + " | " + turnoOriginal
+                + " -> " + nuevoDia
+                + " " + nuevaHoraInicio
+                + " - " + nuevaHoraFin
+                + " | " + estado;
     }
 }
