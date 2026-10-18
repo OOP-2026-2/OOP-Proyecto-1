@@ -971,7 +971,7 @@ public class PersistenciaClub {
 
                 boolean incluyePropina = venta instanceof VentaCafeteria
                         && ((VentaCafeteria) venta)
-                                .getPropina() > 0;
+                        .getPropina() > 0;
 
                 StringBuilder detalles = new StringBuilder();
 
@@ -982,7 +982,7 @@ public class PersistenciaClub {
                     }
 
                     detalles.append(
-                            detalle.getProducto().getNombre())
+                                    detalle.getProducto().getNombre())
                             .append(",")
                             .append(detalle.getCantidad());
                 }
@@ -1882,7 +1882,7 @@ public class PersistenciaClub {
     }
 
     private Turno buscarTurno(Empleado empleado, DiaSemana dia,
-            LocalTime inicio, LocalTime fin) {
+                              LocalTime inicio, LocalTime fin) {
 
         for (Turno turno : empleado.getTurnos()) {
             if (turno.getDiaSemana() == dia
