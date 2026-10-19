@@ -3,6 +3,7 @@ package clubdeportivo;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import clubdeportivo.competencias.Competencia;
@@ -52,21 +53,21 @@ public class ClubDeportivo {
     private final LocalTime horaCierre;
     private final int minEntrenadoresEnTurno;
     private final int minFisioterapeutasEnTurno;
-    private final ArrayList<Usuario> usuarios;
-    private final ArrayList<DeporteConjunto> deportesConjunto;
-    private final ArrayList<DeporteIndividual> deportesIndividuales;
-    private final ArrayList<Competencia> competencias;
-    private final ArrayList<Partido> partidos;
-    private final ArrayList<Instalacion> instalaciones;
-    private final ArrayList<Reserva> reservas;
-    private final ArrayList<SesionEntrenamiento> sesionesEntrenamiento;
-    private final ArrayList<SolicitudCambioTurno> solicitudesCambioTurno;
-    private final ArrayList<PagoMensualidad> pagosMensualidad;
-    private final ArrayList<Producto> productos;
-    private final ArrayList<UbicacionInventario> ubicacionesInventario;
-    private final ArrayList<MovimientoInventario> movimientosInventario;
-    private final ArrayList<SugerenciaProducto> sugerenciasProducto;
-    private final ArrayList<Venta> ventas;
+    private final List<Usuario> usuarios;
+    private final List<DeporteConjunto> deportesConjunto;
+    private final List<DeporteIndividual> deportesIndividuales;
+    private final List<Competencia> competencias;
+    private final List<Partido> partidos;
+    private final List<Instalacion> instalaciones;
+    private final List<Reserva> reservas;
+    private final List<SesionEntrenamiento> sesionesEntrenamiento;
+    private final List<SolicitudCambioTurno> solicitudesCambioTurno;
+    private final List<PagoMensualidad> pagosMensualidad;
+    private final List<Producto> productos;
+    private final List<UbicacionInventario> ubicacionesInventario;
+    private final List<MovimientoInventario> movimientosInventario;
+    private final List<SugerenciaProducto> sugerenciasProducto;
+    private final List<Venta> ventas;
 
     public ClubDeportivo() {
         this("Club Deportivo Séneca", "Universidad de los Andes",
@@ -561,6 +562,10 @@ public class ClubDeportivo {
                     "Ya existe una instalación con ese ID");
         }
 
+        if (instalacion.getDisciplina() != null) {
+            instalacion.getDisciplina().agregarInstalacion(instalacion);
+        }
+
         instalaciones.add(instalacion);
     }
 
@@ -653,8 +658,72 @@ public class ClubDeportivo {
                     "La instalación no está disponible");
         }
 
+        DeporteIndividual disciplina = reserva.getDisciplina();
+
+        if (disciplina != null
+                && !disciplina.permiteNuevaReserva(contarReservasActivas(reserva))) {
+
+            throw new ReservaNoDisponibleException(
+                    "La disciplina alcanzó el máximo de instalaciones "
+                            + "reservadas al mismo tiempo");
+        }
+
         instalacion.agregarReserva(reserva);
         reservas.add(reserva);
+    }
+
+    // Reservas ya guardadas en el archivo: pueden ser de fechas pasadas (historial)
+    public void cargarReserva(Reserva reserva) {
+        if (reserva == null) {
+            throw new IllegalArgumentException(
+                    "La reserva no puede ser nula");
+        }
+
+        Instalacion instalacion = reserva.getInstalacion();
+
+        if (buscarInstalacion(instalacion.getId()) != instalacion) {
+            throw new IllegalArgumentException(
+                    "La instalación no está registrada");
+        }
+
+        instalacion.agregarReserva(reserva);
+        reservas.add(reserva);
+    }
+
+    private int contarReservasActivas(Reserva nueva) {
+        int cantidad = 0;
+
+        for (Reserva reserva : reservas) {
+            boolean mismaDisciplina = reserva.getDisciplina() == nueva.getDisciplina();
+
+            boolean mismaFecha = reserva.getFecha().equals(nueva.getFecha());
+
+            boolean seCruzan = reserva.getHoraInicio().isBefore(nueva.calcularHoraFin())
+                    && nueva.getHoraInicio().isBefore(reserva.calcularHoraFin());
+
+            if (mismaDisciplina && mismaFecha && seCruzan) {
+                cantidad++;
+            }
+        }
+
+        return cantidad;
+    }
+
+    public Reserva buscarReservaActiva(Socio socio, LocalDate fecha, LocalTime hora) {
+        for (Reserva reserva : reservas) {
+            boolean mismoSocio = reserva.getSocio() == socio;
+
+            boolean mismaFecha = reserva.getFecha().equals(fecha);
+
+            boolean enCurso = !hora.isBefore(reserva.getHoraInicio())
+                    && hora.isBefore(reserva.calcularHoraFin());
+
+            if (mismoSocio && mismaFecha && enCurso) {
+                return reserva;
+            }
+        }
+
+        return null;
     }
 
     // Mensualidades
@@ -1192,68 +1261,68 @@ public class ClubDeportivo {
         return minFisioterapeutasEnTurno;
     }
 
-    public ArrayList<Usuario> getUsuarios() {
+    public List<Usuario> getUsuarios() {
         return new ArrayList<Usuario>(usuarios);
     }
 
-    public ArrayList<DeporteConjunto> getDeportesConjunto() {
+    public List<DeporteConjunto> getDeportesConjunto() {
         return new ArrayList<DeporteConjunto>(deportesConjunto);
     }
 
-    public ArrayList<DeporteIndividual> getDeportesIndividuales() {
+    public List<DeporteIndividual> getDeportesIndividuales() {
         return new ArrayList<DeporteIndividual>(deportesIndividuales);
     }
 
-    public ArrayList<Competencia> getCompetencias() {
+    public List<Competencia> getCompetencias() {
         return new ArrayList<Competencia>(competencias);
     }
 
-    public ArrayList<Partido> getPartidos() {
+    public List<Partido> getPartidos() {
         return new ArrayList<Partido>(partidos);
     }
 
-    public ArrayList<Instalacion> getInstalaciones() {
+    public List<Instalacion> getInstalaciones() {
         return new ArrayList<Instalacion>(instalaciones);
     }
 
-    public ArrayList<Reserva> getReservas() {
+    public List<Reserva> getReservas() {
         return new ArrayList<Reserva>(reservas);
     }
 
-    public ArrayList<SesionEntrenamiento> getSesionesEntrenamiento() {
+    public List<SesionEntrenamiento> getSesionesEntrenamiento() {
         return new ArrayList<SesionEntrenamiento>(sesionesEntrenamiento);
     }
 
-    public ArrayList<SesionEntrenamiento> getSesiones() {
+    public List<SesionEntrenamiento> getSesiones() {
         return getSesionesEntrenamiento();
     }
 
-    public ArrayList<SolicitudCambioTurno> getSolicitudesCambioTurno() {
+    public List<SolicitudCambioTurno> getSolicitudesCambioTurno() {
         return new ArrayList<SolicitudCambioTurno>(
                 solicitudesCambioTurno);
     }
 
-    public ArrayList<PagoMensualidad> getPagosMensualidad() {
+    public List<PagoMensualidad> getPagosMensualidad() {
         return new ArrayList<PagoMensualidad>(pagosMensualidad);
     }
 
-    public ArrayList<Producto> getProductos() {
+    public List<Producto> getProductos() {
         return new ArrayList<Producto>(productos);
     }
 
-    public ArrayList<UbicacionInventario> getUbicacionesInventario() {
+    public List<UbicacionInventario> getUbicacionesInventario() {
         return new ArrayList<UbicacionInventario>(ubicacionesInventario);
     }
 
-    public ArrayList<MovimientoInventario> getMovimientosInventario() {
+    public List<MovimientoInventario> getMovimientosInventario() {
         return new ArrayList<MovimientoInventario>(movimientosInventario);
     }
 
-    public ArrayList<SugerenciaProducto> getSugerenciasProducto() {
+    public List<SugerenciaProducto> getSugerenciasProducto() {
         return new ArrayList<SugerenciaProducto>(sugerenciasProducto);
     }
 
-    public ArrayList<Venta> getVentas() {
+    public List<Venta> getVentas() {
         return new ArrayList<Venta>(ventas);
     }
 }

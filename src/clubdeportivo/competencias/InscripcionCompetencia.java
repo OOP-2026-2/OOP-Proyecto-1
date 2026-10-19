@@ -1,14 +1,17 @@
 package clubdeportivo.competencias;
 
 import java.time.LocalDate;
-
+import java.util.ArrayList;
+import java.util.List;
 import clubdeportivo.deportes.Equipo;
 import clubdeportivo.deportes.EstadoInscripcion;
+import usuarios.tipos.Socio;
 
 public class InscripcionCompetencia {
     private Competencia competencia;
     private Equipo equipo;
     private LocalDate fechaInscripcion;
+    private List<Socio> nomina;
     private EstadoInscripcion estado;
 
     public InscripcionCompetencia(LocalDate fechaInscripcion, Equipo equipo, Competencia competencia) {
@@ -44,7 +47,31 @@ public class InscripcionCompetencia {
         this.fechaInscripcion = fechaInscripcion;
         this.equipo = equipo;
         this.competencia = competencia;
+        this.nomina = new ArrayList<Socio>();
         this.estado = EstadoInscripcion.ACTIVA;
+    }
+
+    public void agregarJugadorNomina(Socio socio) {
+        if (socio == null) {
+            throw new IllegalArgumentException(
+                    "El socio no puede ser nulo");
+        }
+
+        if (!equipo.getJugadoresHabilitados().contains(socio)) {
+            throw new IllegalArgumentException(
+                    "El socio no es un jugador habilitado del equipo");
+        }
+
+        if (estaEnNomina(socio)) {
+            throw new IllegalArgumentException(
+                    "El socio ya está en la nómina");
+        }
+
+        nomina.add(socio);
+    }
+
+    public boolean estaEnNomina(Socio socio) {
+        return nomina.contains(socio);
     }
 
     public boolean estaActiva() {
@@ -99,6 +126,10 @@ public class InscripcionCompetencia {
 
     public Competencia getCompetencia() {
         return competencia;
+    }
+
+    public List<Socio> getNomina() {
+        return new ArrayList<Socio>(nomina);
     }
 
     public EstadoInscripcion getEstado() {

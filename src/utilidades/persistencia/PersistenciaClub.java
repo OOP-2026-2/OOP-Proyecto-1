@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import clubdeportivo.ClubDeportivo;
 import clubdeportivo.competencias.Competencia;
 import clubdeportivo.competencias.FormatoCompetencia;
@@ -229,7 +230,10 @@ public class PersistenciaClub {
 
                 escritor.write(deporte.getNombre() + ";"
                         + deporte.getMinimoJugadores() + ";"
-                        + posiciones);
+                        + posiciones + ";"
+                        + deporte.getPuntosVictoria() + ";"
+                        + deporte.getPuntosEmpate() + ";"
+                        + deporte.isPermiteEmpate());
 
                 escritor.newLine();
             }
@@ -251,13 +255,16 @@ public class PersistenciaClub {
 
                 String[] datos = linea.split(";", -1);
 
-                if (datos.length < 3) {
+                if (datos.length < 6) {
                     continue;
                 }
 
                 DeporteConjunto deporte = new DeporteConjunto(
                         datos[0],
-                        Integer.parseInt(datos[1]));
+                        Integer.parseInt(datos[1]),
+                        Integer.parseInt(datos[3]),
+                        Integer.parseInt(datos[4]),
+                        Boolean.parseBoolean(datos[5]));
 
                 if (!datos[2].trim().isEmpty()) {
                     String[] posiciones = datos[2].split(",");
@@ -279,7 +286,7 @@ public class PersistenciaClub {
         try (BufferedWriter escritor = Files.newBufferedWriter(ARCHIVO_DEPORTES_INDIVIDUALES)) {
             for (DeporteIndividual deporte : club.getDeportesIndividuales()) {
                 escritor.write(deporte.getNombre() + ";"
-                        + deporte.getMaximoInscripciones());
+                        + deporte.getMaximoInstalaciones());
 
                 escritor.newLine();
             }
@@ -624,7 +631,7 @@ public class PersistenciaClub {
                             datos[1], Double.parseDouble(datos[2]),
                             Boolean.parseBoolean(datos[3]));
                 } else if (datos.length >= 4 && datos[0].equals("SNACK")) {
-                    ArrayList<String> alergenos = new ArrayList<String>();
+                    List<String> alergenos = new ArrayList<String>();
 
                     if (!datos[3].trim().isEmpty()) {
                         String[] listaAlergenos = datos[3].split(",");
@@ -847,7 +854,8 @@ public class PersistenciaClub {
                 escritor.write(instalacion.getTipo() + ";"
                         + instalacion.getId() + ";"
                         + instalacion.getCapacidadMaxima() + ";"
-                        + instalacion.isTechada());
+                        + instalacion.isTechada() + ";"
+                        + (instalacion.getDisciplina() == null ? "" : instalacion.getDisciplina().getNombre()));
 
                 escritor.newLine();
             }
@@ -873,11 +881,18 @@ public class PersistenciaClub {
                     continue;
                 }
 
+                DeporteIndividual disciplina = null;
+
+                if (datos.length > 4) {
+                    disciplina = club.buscarDeporteIndividual(datos[4]);
+                }
+
                 Instalacion instalacion = new Instalacion(
                         datos[1],
                         TipoInstalacion.valueOf(datos[0]),
                         Integer.parseInt(datos[2]),
-                        Boolean.parseBoolean(datos[3]));
+                        Boolean.parseBoolean(datos[3]),
+                        disciplina);
 
                 club.registrarInstalacion(instalacion);
             }
@@ -932,10 +947,6 @@ public class PersistenciaClub {
                     continue;
                 }
 
-                if (fecha.isBefore(LocalDate.now())) {
-                    continue;
-                }
-
                 Reserva reserva = new Reserva(
                         (Socio) usuario,
                         instalacion,
@@ -945,7 +956,7 @@ public class PersistenciaClub {
                         Integer.parseInt(datos[5]),
                         Modalidad.valueOf(datos[6]));
 
-                club.registrarReserva(reserva);
+                club.cargarReserva(reserva);
             }
         }
     }
@@ -971,7 +982,7 @@ public class PersistenciaClub {
 
                 boolean incluyePropina = venta instanceof VentaCafeteria
                         && ((VentaCafeteria) venta)
-                        .getPropina() > 0;
+                                .getPropina() > 0;
 
                 StringBuilder detalles = new StringBuilder();
 
@@ -982,7 +993,7 @@ public class PersistenciaClub {
                     }
 
                     detalles.append(
-                                    detalle.getProducto().getNombre())
+                            detalle.getProducto().getNombre())
                             .append(",")
                             .append(detalle.getCantidad());
                 }
@@ -1562,11 +1573,26 @@ public class PersistenciaClub {
                     escritor.write(competencia.getNombre() + ";"
                             + competencia.getAnio() + ";"
                             + inscripcion.getEquipo().getNombre() + ";"
-                            + inscripcion.getEstado());
+                            + inscripcion.getEstado() + ";"
+                            + nominaEnTexto(inscripcion));
                     escritor.newLine();
                 }
             }
         }
+    }
+
+    private String nominaEnTexto(InscripcionCompetencia inscripcion) {
+        StringBuilder nomina = new StringBuilder();
+
+        for (Socio socio : inscripcion.getNomina()) {
+            if (nomina.length() > 0) {
+                nomina.append(",");
+            }
+
+            nomina.append(socio.getId());
+        }
+
+        return nomina.toString();
     }
 
     private void cargarInscripcionesCompetencia(ClubDeportivo club) throws IOException {
@@ -1599,6 +1625,16 @@ public class PersistenciaClub {
                 competencia.inscribirEquipo(equipo);
                 InscripcionCompetencia inscripcion = competencia.buscarInscripcion(equipo);
                 EstadoInscripcion estado = EstadoInscripcion.valueOf(datos[3]);
+
+                if (datos.length > 4 && !datos[4].trim().isEmpty()) {
+                    for (String idJugador : datos[4].split(",")) {
+                        Usuario jugador = club.buscarUsuario(idJugador);
+
+                        if (jugador instanceof Socio) {
+                            inscripcion.agregarJugadorNomina((Socio) jugador);
+                        }
+                    }
+                }
 
                 if (estado == EstadoInscripcion.SUSPENDIDA) {
                     inscripcion.suspender();
@@ -1636,11 +1672,11 @@ public class PersistenciaClub {
                     tipo = "PRACTICA";
                     StringBuilder participantes = new StringBuilder();
 
-                    for (Socio socio : practica.getParticipantes()) {
+                    for (Usuario participante : practica.getParticipantes()) {
                         if (participantes.length() > 0) {
                             participantes.append(",");
                         }
-                        participantes.append(socio.getId());
+                        participantes.append(participante.getId());
                     }
 
                     datosEspecificos = practica.getDeporte().getNombre() + ","
@@ -1721,8 +1757,8 @@ public class PersistenciaClub {
                     for (int i = 2; i < especificos.length; i++) {
                         Usuario usuario = club.buscarUsuario(especificos[i]);
 
-                        if (usuario instanceof Socio) {
-                            practica.agregarParticipante((Socio) usuario);
+                        if (usuario != null) {
+                            practica.agregarParticipante(usuario);
                         }
                     }
 
@@ -1753,30 +1789,28 @@ public class PersistenciaClub {
     private void guardarEmpleados(ClubDeportivo club) throws IOException {
         try (BufferedWriter escritor = Files.newBufferedWriter(ARCHIVO_EMPLEADOS)) {
             for (Usuario usuario : club.getUsuarios()) {
-                if (!(usuario instanceof Empleado)) {
-                    continue;
-                }
-
-                Empleado empleado = (Empleado) usuario;
                 String tipo;
+                String codigoDescuento = "";
 
-                if (empleado instanceof Administrador) {
+                if (usuario instanceof Administrador) {
                     tipo = "ADMINISTRADOR";
-                } else if (empleado instanceof Entrenador) {
+                } else if (usuario instanceof Entrenador) {
                     tipo = "ENTRENADOR";
-                } else if (empleado instanceof Fisioterapeuta) {
+                    codigoDescuento = ((Empleado) usuario).getCodigoDescuento();
+                } else if (usuario instanceof Fisioterapeuta) {
                     tipo = "FISIOTERAPEUTA";
+                    codigoDescuento = ((Empleado) usuario).getCodigoDescuento();
                 } else {
                     continue;
                 }
 
                 escritor.write(tipo + ";"
-                        + empleado.getId() + ";"
-                        + empleado.getNombre() + ";"
-                        + empleado.getFechaNacimiento() + ";"
-                        + empleado.getLogin() + ";"
-                        + empleado.getContrasena() + ";"
-                        + empleado.getCodigoDescuento());
+                        + usuario.getId() + ";"
+                        + usuario.getNombre() + ";"
+                        + usuario.getFechaNacimiento() + ";"
+                        + usuario.getLogin() + ";"
+                        + usuario.getContrasena() + ";"
+                        + codigoDescuento);
                 escritor.newLine();
             }
         }
@@ -1802,11 +1836,11 @@ public class PersistenciaClub {
                 }
 
                 LocalDate fechaNacimiento = LocalDate.parse(datos[3]);
-                Empleado empleado;
+                Usuario empleado;
 
                 if (datos[0].equals("ADMINISTRADOR")) {
                     empleado = new Administrador(datos[1], datos[2], fechaNacimiento,
-                            datos[4], datos[5], datos[6]);
+                            datos[4], datos[5]);
                 } else if (datos[0].equals("ENTRENADOR")) {
                     empleado = new Entrenador(datos[1], datos[2], fechaNacimiento,
                             datos[4], datos[5], datos[6]);
@@ -1882,7 +1916,7 @@ public class PersistenciaClub {
     }
 
     private Turno buscarTurno(Empleado empleado, DiaSemana dia,
-                              LocalTime inicio, LocalTime fin) {
+            LocalTime inicio, LocalTime fin) {
 
         for (Turno turno : empleado.getTurnos()) {
             if (turno.getDiaSemana() == dia

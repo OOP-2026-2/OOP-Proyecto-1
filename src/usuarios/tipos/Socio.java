@@ -2,13 +2,14 @@ package usuarios.tipos;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import clubdeportivo.membresias.PagoMensualidad;
 import usuarios.Comprador;
 import usuarios.Usuario;
 
 public class Socio extends Usuario implements Comprador {
     private double puntosFidelidad;
-    private ArrayList<PagoMensualidad> pagos;
+    private List<PagoMensualidad> pagos;
 
     public Socio(String id, String nombre, LocalDate fechaNacimiento, String login, String contrasena) {
         super(id, nombre, fechaNacimiento, login, contrasena);
@@ -46,7 +47,7 @@ public class Socio extends Usuario implements Comprador {
         return puntosFidelidad;
     }
 
-    public ArrayList<PagoMensualidad> getPagos() {
+    public List<PagoMensualidad> getPagos() {
         return new ArrayList<PagoMensualidad>(pagos);
     }
 }

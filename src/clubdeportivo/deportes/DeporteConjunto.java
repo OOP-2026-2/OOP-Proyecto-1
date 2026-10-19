@@ -1,14 +1,19 @@
 package clubdeportivo.deportes;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DeporteConjunto {
     private String nombre;
     private int minimoJugadores;
-    private ArrayList<Equipo> equipos;
-    private ArrayList<Posicion> posiciones;
+    private int puntosVictoria;
+    private int puntosEmpate;
+    private boolean permiteEmpate;
+    private List<Equipo> equipos;
+    private List<Posicion> posiciones;
 
-    public DeporteConjunto(String nombre, int minimoJugadores) {
+    public DeporteConjunto(String nombre, int minimoJugadores, int puntosVictoria,
+            int puntosEmpate, boolean permiteEmpate) {
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "El nombre del deporte es obligatorio");
@@ -19,8 +24,16 @@ public class DeporteConjunto {
                     "El mínimo de jugadores debe ser mayor que cero");
         }
 
+        if (puntosVictoria < 0 || puntosEmpate < 0) {
+            throw new IllegalArgumentException(
+                    "Los puntos de la tabla no pueden ser negativos");
+        }
+
         this.nombre = nombre;
         this.minimoJugadores = minimoJugadores;
+        this.puntosVictoria = puntosVictoria;
+        this.puntosEmpate = puntosEmpate;
+        this.permiteEmpate = permiteEmpate;
         this.equipos = new ArrayList<Equipo>();
         this.posiciones = new ArrayList<Posicion>();
     }
@@ -64,6 +77,18 @@ public class DeporteConjunto {
         return cantidadJugadores >= minimoJugadores;
     }
 
+    public int calcularPuntos(int puntosFavor, int puntosContra) {
+        if (puntosFavor > puntosContra) {
+            return puntosVictoria;
+        }
+
+        if (puntosFavor == puntosContra && permiteEmpate) {
+            return puntosEmpate;
+        }
+
+        return 0;
+    }
+
     public String getNombre() {
         return nombre;
     }
@@ -72,12 +97,24 @@ public class DeporteConjunto {
         return minimoJugadores;
     }
 
-    public ArrayList<Equipo> getEquipos() {
+    public int getPuntosVictoria() {
+        return puntosVictoria;
+    }
+
+    public int getPuntosEmpate() {
+        return puntosEmpate;
+    }
+
+    public boolean isPermiteEmpate() {
+        return permiteEmpate;
+    }
+
+    public List<Equipo> getEquipos() {
 
         return new ArrayList<Equipo>(equipos);
     }
 
-    public ArrayList<Posicion> getPosiciones() {
+    public List<Posicion> getPosiciones() {
 
         return new ArrayList<Posicion>(posiciones);
     }

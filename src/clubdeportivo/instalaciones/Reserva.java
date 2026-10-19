@@ -2,12 +2,14 @@ package clubdeportivo.instalaciones;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import clubdeportivo.deportes.DeporteIndividual;
 import clubdeportivo.deportes.Modalidad;
 import usuarios.tipos.Socio;
 
 public class Reserva {
     private final Socio socio;
     private final Instalacion instalacion;
+    private final DeporteIndividual disciplina;
     private final LocalDate fecha;
     private final LocalTime horaInicio;
     private final int duracionMinutos;
@@ -43,17 +45,15 @@ public class Reserva {
 
         this.socio = socio;
         this.instalacion = instalacion;
+        this.disciplina = instalacion.getDisciplina();
         this.fecha = fecha;
         this.horaInicio = horaInicio;
         this.duracionMinutos = duracionMinutos;
         this.numeroJugadores = numeroJugadores;
         this.modalidad = modalidad;
 
-        if (!esFechaValida()) {
-            throw new IllegalArgumentException(
-                    "No se pueden registrar reservas en fechas pasadas");
-        }
-
+        // La fecha pasada se rechaza al registrar la reserva en el club, no aquí,
+        // para poder cargar el historial guardado
         if (!cantidadJugadoresValida()) {
             throw new IllegalArgumentException(
                     "La cantidad de jugadores no corresponde "
@@ -129,6 +129,10 @@ public class Reserva {
 
     public Instalacion getInstalacion() {
         return instalacion;
+    }
+
+    public DeporteIndividual getDisciplina() {
+        return disciplina;
     }
 
     public LocalDate getFecha() {

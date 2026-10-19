@@ -2,14 +2,17 @@ package clubdeportivo.competencias.Partidos;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import clubdeportivo.deportes.DeporteIndividual;
 import clubdeportivo.deportes.InscripcionAcademia;
 import clubdeportivo.deportes.Modalidad;
+import usuarios.Usuario;
 import usuarios.tipos.Socio;
+import usuarios.tipos.empleados.Entrenador;
 
 public class PartidoPractica extends Partido {
     private DeporteIndividual deporte;
-    private ArrayList<Socio> participantes;
+    private List<Usuario> participantes;
     private Modalidad modalidad;
 
     public PartidoPractica(LocalDate fecha, DeporteIndividual deporte,
@@ -28,13 +31,13 @@ public class PartidoPractica extends Partido {
 
         this.deporte = deporte;
         this.modalidad = modalidad;
-        this.participantes = new ArrayList<Socio>();
+        this.participantes = new ArrayList<Usuario>();
     }
 
-    public void agregarParticipante(Socio socio) {
-        if (socio == null) {
+    public void agregarParticipante(Usuario participante) {
+        if (participante == null) {
             throw new IllegalArgumentException(
-                    "El socio no puede ser nulo");
+                    "El participante no puede ser nulo");
         }
 
         if (getEstado() != EstadoPartido.PROGRAMADO) {
@@ -43,15 +46,22 @@ public class PartidoPractica extends Partido {
                             + "a un partido cerrado");
         }
 
-        if (participantes.contains(socio)) {
+        if (participantes.contains(participante)) {
             throw new IllegalArgumentException(
-                    "El socio ya participa en el partido");
+                    "El participante ya participa en el partido");
         }
 
-        if (!estaHabilitado(socio)) {
+        // Solo juegan socios con inscripción activa o entrenadores
+        if (participante instanceof Socio) {
+            if (!estaHabilitado((Socio) participante)) {
+                throw new IllegalArgumentException(
+                        "El socio no tiene una inscripción "
+                                + "activa en este deporte");
+            }
+        } else if (!(participante instanceof Entrenador)) {
             throw new IllegalArgumentException(
-                    "El socio no tiene una inscripción "
-                            + "activa en este deporte");
+                    "Solo pueden participar socios habilitados "
+                            + "o entrenadores");
         }
 
         int maximoParticipantes = modalidad == Modalidad.SENCILLOS
@@ -64,7 +74,7 @@ public class PartidoPractica extends Partido {
                             + "de participantes");
         }
 
-        participantes.add(socio);
+        participantes.add(participante);
     }
 
     private boolean estaHabilitado(Socio socio) {
@@ -77,6 +87,16 @@ public class PartidoPractica extends Partido {
         }
 
         return false;
+    }
+
+    @Override
+    protected boolean participo(Socio jugador) {
+        return participantes.contains(jugador);
+    }
+
+    @Override
+    protected boolean esDeporteIndividual() {
+        return true;
     }
 
     public boolean cantidadParticipantesValida() {
@@ -106,8 +126,8 @@ public class PartidoPractica extends Partido {
         return deporte;
     }
 
-    public ArrayList<Socio> getParticipantes() {
-        return new ArrayList<Socio>(
+    public List<Usuario> getParticipantes() {
+        return new ArrayList<Usuario>(
                 participantes);
     }
 

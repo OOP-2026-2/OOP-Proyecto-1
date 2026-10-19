@@ -26,6 +26,11 @@ public abstract class EstadisticaJugador {
         return this.jugador == jugador;
     }
 
+    // Por defecto la estadística es de un deporte de conjunto; las de tenis la sobrescriben
+    public boolean esDeDeporteIndividual() {
+        return false;
+    }
+
     public Socio getJugador() {
         return jugador;
     }

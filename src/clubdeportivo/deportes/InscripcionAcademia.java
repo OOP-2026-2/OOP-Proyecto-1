@@ -41,11 +41,6 @@ public class InscripcionAcademia {
             }
         }
 
-        if (!deporte.permiteNuevaInscripcion()) {
-            throw new IllegalStateException(
-                    "El deporte no admite más inscripciones");
-        }
-
         this.socio = socio;
         this.deporte = deporte;
         this.nivel = nivel;

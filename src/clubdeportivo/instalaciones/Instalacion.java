@@ -3,15 +3,23 @@ package clubdeportivo.instalaciones;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
+import clubdeportivo.deportes.DeporteIndividual;
 
 public class Instalacion {
     private final String id;
     private final TipoInstalacion tipo;
     private final int capacidadMaxima;
     private final boolean techada;
-    private final ArrayList<Reserva> reservas;
+    private final DeporteIndividual disciplina;
+    private final List<Reserva> reservas;
 
     public Instalacion(String id, TipoInstalacion tipo, int capacidadMaxima, boolean techada) {
+        this(id, tipo, capacidadMaxima, techada, null);
+    }
+
+    public Instalacion(String id, TipoInstalacion tipo, int capacidadMaxima, boolean techada,
+            DeporteIndividual disciplina) {
 
         if (id == null || id.trim().isEmpty()) {
             throw new IllegalArgumentException(
@@ -32,6 +40,7 @@ public class Instalacion {
         this.tipo = tipo;
         this.capacidadMaxima = capacidadMaxima;
         this.techada = techada;
+        this.disciplina = disciplina;
         this.reservas = new ArrayList<Reserva>();
     }
 
@@ -114,7 +123,11 @@ public class Instalacion {
         return techada;
     }
 
-    public ArrayList<Reserva> getReservas() {
+    public DeporteIndividual getDisciplina() {
+        return disciplina;
+    }
+
+    public List<Reserva> getReservas() {
         return new ArrayList<Reserva>(reservas);
     }
 

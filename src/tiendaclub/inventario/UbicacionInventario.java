@@ -1,10 +1,11 @@
 package tiendaclub.inventario;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class UbicacionInventario {
     private final String nombre;
-    private final ArrayList<ExistenciaInventario> existencias;
+    private final List<ExistenciaInventario> existencias;
 
     public UbicacionInventario(String nombre) {
 
@@ -63,7 +64,7 @@ public class UbicacionInventario {
         return nombre;
     }
 
-    public ArrayList<ExistenciaInventario> getExistencias() {
+    public List<ExistenciaInventario> getExistencias() {
 
         return new ArrayList<ExistenciaInventario>(
                 existencias);

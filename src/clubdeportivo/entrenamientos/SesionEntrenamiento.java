@@ -3,6 +3,7 @@ package clubdeportivo.entrenamientos;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import clubdeportivo.deportes.DeporteIndividual;
 import clubdeportivo.deportes.Equipo;
 import clubdeportivo.deportes.InscripcionAcademia;
@@ -20,7 +21,7 @@ public class SesionEntrenamiento {
     private Equipo equipo;
     private DeporteIndividual deporteIndividual;
     private TipoSesion tipo;
-    private final ArrayList<RegistroAsistencia> registros;
+    private final List<RegistroAsistencia> registros;
 
     public SesionEntrenamiento(LocalDate fecha, LocalTime horaInicio,
             int duracionMinutos, Entrenador entrenador,
@@ -326,7 +327,7 @@ public class SesionEntrenamiento {
         return tipo;
     }
 
-    public ArrayList<RegistroAsistencia> getRegistros() {
+    public List<RegistroAsistencia> getRegistros() {
         return new ArrayList<RegistroAsistencia>(
                 registros);
     }

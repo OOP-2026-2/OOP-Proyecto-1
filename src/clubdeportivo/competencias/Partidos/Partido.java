@@ -2,6 +2,7 @@ package clubdeportivo.competencias.Partidos;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 import clubdeportivo.competencias.Estadisticas.EstadisticaJugador;
 import usuarios.tipos.Socio;
@@ -10,7 +11,7 @@ public abstract class Partido {
     private LocalDate fecha;
     private EstadoPartido estado;
     private String marcadorFinal;
-    private ArrayList<EstadisticaJugador> estadisticas;
+    private List<EstadisticaJugador> estadisticas;
 
     public Partido(LocalDate fecha) {
         if (fecha == null) {
@@ -105,6 +106,16 @@ public abstract class Partido {
 
         Socio jugador = estadistica.getJugador();
 
+        if (!participo(jugador)) {
+            throw new IllegalArgumentException(
+                    "El jugador no participó en este partido");
+        }
+
+        if (estadistica.esDeDeporteIndividual() != esDeporteIndividual()) {
+            throw new IllegalArgumentException(
+                    "La estadística no corresponde al deporte del partido");
+        }
+
         if (buscarEstadistica(jugador) != null) {
             throw new IllegalArgumentException(
                     "El jugador ya tiene estadísticas "
@@ -112,6 +123,14 @@ public abstract class Partido {
         }
 
         estadisticas.add(estadistica);
+    }
+
+    // Cada tipo de partido indica quiénes jugaron
+    protected abstract boolean participo(Socio jugador);
+
+    // Solo los partidos de práctica son de deportes individuales
+    protected boolean esDeporteIndividual() {
+        return false;
     }
 
     public EstadisticaJugador buscarEstadistica(
@@ -142,7 +161,7 @@ public abstract class Partido {
         return marcadorFinal;
     }
 
-    public ArrayList<EstadisticaJugador> getEstadisticas() {
+    public List<EstadisticaJugador> getEstadisticas() {
         return new ArrayList<EstadisticaJugador>(
                 estadisticas);
     }

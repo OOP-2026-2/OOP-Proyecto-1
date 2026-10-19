@@ -1,6 +1,7 @@
 package clubdeportivo.deportes;
 
 import java.util.ArrayList;
+import java.util.List;
 import usuarios.tipos.Socio;
 
 public class Equipo {
@@ -9,7 +10,7 @@ public class Equipo {
     private int cupoMaximo;
     private boolean activo;
     private DeporteConjunto deporte;
-    private ArrayList<InscripcionEquipo> inscripciones;
+    private List<InscripcionEquipo> inscripciones;
 
     public Equipo(String nombre, Categoria categoria, int cupoMaximo, DeporteConjunto deporte) {
         if (nombre == null || nombre.trim().isEmpty()) {
@@ -104,9 +105,9 @@ public class Equipo {
         return null;
     }
 
-    public ArrayList<Socio> getJugadoresHabilitados() {
+    public List<Socio> getJugadoresHabilitados() {
 
-        ArrayList<Socio> jugadoresHabilitados = new ArrayList<Socio>();
+        List<Socio> jugadoresHabilitados = new ArrayList<Socio>();
 
         for (InscripcionEquipo inscripcion : inscripciones) {
 
@@ -139,7 +140,7 @@ public class Equipo {
         return deporte;
     }
 
-    public ArrayList<InscripcionEquipo> getInscripciones() {
+    public List<InscripcionEquipo> getInscripciones() {
 
         return new ArrayList<InscripcionEquipo>(
                 inscripciones);

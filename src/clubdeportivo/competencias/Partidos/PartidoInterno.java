@@ -2,6 +2,7 @@ package clubdeportivo.competencias.Partidos;
 
 import java.time.LocalDate;
 import clubdeportivo.deportes.Equipo;
+import usuarios.tipos.Socio;
 
 public class PartidoInterno extends Partido {
     private Equipo equipoLocal;
@@ -57,6 +58,12 @@ public class PartidoInterno extends Partido {
 
     public boolean equiposDiferentes() {
         return equipoLocal != equipoVisitante;
+    }
+
+    @Override
+    protected boolean participo(Socio jugador) {
+        return equipoLocal.buscarInscripcion(jugador) != null
+                || equipoVisitante.buscarInscripcion(jugador) != null;
     }
 
     public Equipo getEquipoLocal() {

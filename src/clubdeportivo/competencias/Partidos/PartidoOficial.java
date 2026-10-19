@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import clubdeportivo.competencias.Competencia;
 import clubdeportivo.competencias.InscripcionCompetencia;
 import clubdeportivo.deportes.Equipo;
+import usuarios.tipos.Socio;
 
 public class PartidoOficial extends Partido {
     private Equipo equipo;
@@ -76,6 +77,31 @@ public class PartidoOficial extends Partido {
 
     public void registrarMarcador(String marcador) {
         registrarResultado(marcador);
+    }
+
+    @Override
+    public void registrarResultado(String marcador) {
+        // Se valida antes de guardarlo: un marcador inválido no llega a finalizar el partido
+        competencia.validarMarcador(marcador);
+        super.registrarResultado(marcador);
+    }
+
+    @Override
+    public void finalizar() {
+        super.finalizar();
+        competencia.actualizarTabla(this);
+    }
+
+    @Override
+    protected boolean participo(Socio jugador) {
+        InscripcionCompetencia inscripcion = competencia.buscarInscripcion(equipo);
+
+        // Si el equipo tiene nómina juegan los de la nómina; si no, los del equipo
+        if (!inscripcion.getNomina().isEmpty()) {
+            return inscripcion.estaEnNomina(jugador);
+        }
+
+        return equipo.buscarInscripcion(jugador) != null;
     }
 
     public Equipo getEquipo() {

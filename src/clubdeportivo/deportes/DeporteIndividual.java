@@ -1,25 +1,29 @@
 package clubdeportivo.deportes;
 
 import java.util.ArrayList;
+import java.util.List;
+import clubdeportivo.instalaciones.Instalacion;
 
 public class DeporteIndividual {
     private String nombre;
-    private int maximoInscripciones;
-    private ArrayList<InscripcionAcademia> inscripciones;
+    private int maximoInstalaciones;
+    private List<Instalacion> instalaciones;
+    private List<InscripcionAcademia> inscripciones;
 
-    public DeporteIndividual(String nombre, int maximoInscripciones) {
+    public DeporteIndividual(String nombre, int maximoInstalaciones) {
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "El nombre del deporte es obligatorio");
         }
 
-        if (maximoInscripciones <= 0) {
+        if (maximoInstalaciones <= 0) {
             throw new IllegalArgumentException(
-                    "El máximo de inscripciones debe ser mayor que cero");
+                    "El máximo de instalaciones debe ser mayor que cero");
         }
 
         this.nombre = nombre;
-        this.maximoInscripciones = maximoInscripciones;
+        this.maximoInstalaciones = maximoInstalaciones;
+        this.instalaciones = new ArrayList<Instalacion>();
         this.inscripciones = new ArrayList<InscripcionAcademia>();
     }
 
@@ -43,35 +47,37 @@ public class DeporteIndividual {
             }
         }
 
-        if (!permiteNuevaInscripcion()) {
-            throw new IllegalStateException(
-                    "El deporte alcanzó el máximo de inscripciones activas");
-        }
-
         inscripciones.add(inscripcion);
     }
 
-    public boolean permiteNuevaInscripcion() {
-        int cantidadActivas = 0;
-
-        for (InscripcionAcademia inscripcion : inscripciones) {
-            if (inscripcion.estaActiva()) {
-                cantidadActivas++;
-            }
+    public void agregarInstalacion(Instalacion instalacion) {
+        if (instalacion == null) {
+            throw new IllegalArgumentException(
+                    "La instalación no puede ser nula");
         }
 
-        return cantidadActivas < maximoInscripciones;
+        if (!instalaciones.contains(instalacion)) {
+            instalaciones.add(instalacion);
+        }
+    }
+
+    public boolean permiteNuevaReserva(int reservasActivas) {
+        return reservasActivas < maximoInstalaciones;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public int getMaximoInscripciones() {
-        return maximoInscripciones;
+    public int getMaximoInstalaciones() {
+        return maximoInstalaciones;
     }
 
-    public ArrayList<InscripcionAcademia> getInscripciones() {
+    public List<Instalacion> getInstalaciones() {
+        return new ArrayList<Instalacion>(instalaciones);
+    }
+
+    public List<InscripcionAcademia> getInscripciones() {
         return new ArrayList<InscripcionAcademia>(inscripciones);
     }
 

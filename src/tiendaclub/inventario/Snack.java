@@ -1,11 +1,12 @@
 package tiendaclub.inventario;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Snack extends Producto {
-    private final ArrayList<String> alergenos;
+    private final List<String> alergenos;
 
-    public Snack(String nombre, double precio, ArrayList<String> alergenos) {
+    public Snack(String nombre, double precio, List<String> alergenos) {
         super(nombre, precio);
         this.alergenos = new ArrayList<String>();
         if (alergenos != null) {
@@ -36,7 +37,7 @@ public class Snack extends Producto {
         return false;
     }
 
-    public ArrayList<String> getAlergenos() {
+    public List<String> getAlergenos() {
         return new ArrayList<String>(alergenos);
     }
 

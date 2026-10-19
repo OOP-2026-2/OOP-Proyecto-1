@@ -2,6 +2,7 @@ package tiendaclub.ventas;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import tiendaclub.inventario.Producto;
 import tiendaclub.ventas.descuentos.PoliticaDescuento;
 import tiendaclub.ventas.descuentos.SinDescuento;
@@ -12,7 +13,7 @@ public abstract class Venta {
 
     private final LocalDate fecha;
     private final Comprador comprador;
-    private final ArrayList<DetalleVenta> detalles;
+    private final List<DetalleVenta> detalles;
     private PoliticaDescuento politicaDescuento;
     private double subtotal;
     private double descuento;
@@ -159,7 +160,7 @@ public abstract class Venta {
         return comprador;
     }
 
-    public ArrayList<DetalleVenta> getDetalles() {
+    public List<DetalleVenta> getDetalles() {
         return new ArrayList<DetalleVenta>(detalles);
     }
 

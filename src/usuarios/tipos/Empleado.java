@@ -3,6 +3,7 @@ package usuarios.tipos;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import clubdeportivo.turnos.DiaSemana;
 import clubdeportivo.turnos.EstadoSolicitud;
 import clubdeportivo.turnos.SolicitudCambioTurno;
@@ -12,8 +13,8 @@ import usuarios.Usuario;
 
 public abstract class Empleado extends Usuario implements Comprador {
     private final String codigoDescuento;
-    private final ArrayList<Turno> turnos;
-    private final ArrayList<SolicitudCambioTurno> solicitudesCambio;
+    private final List<Turno> turnos;
+    private final List<SolicitudCambioTurno> solicitudesCambio;
 
     public Empleado(String id, String nombre, LocalDate fechaNacimiento,
             String login, String contrasena, String codigoDescuento) {
@@ -148,11 +149,11 @@ public abstract class Empleado extends Usuario implements Comprador {
         return codigoDescuento;
     }
 
-    public ArrayList<Turno> getTurnos() {
+    public List<Turno> getTurnos() {
         return new ArrayList<Turno>(turnos);
     }
 
-    public ArrayList<SolicitudCambioTurno> getSolicitudesCambio() {
+    public List<SolicitudCambioTurno> getSolicitudesCambio() {
         return new ArrayList<SolicitudCambioTurno>(
                 solicitudesCambio);
     }

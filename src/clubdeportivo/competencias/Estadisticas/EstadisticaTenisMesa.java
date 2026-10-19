@@ -11,6 +11,11 @@ public class EstadisticaTenisMesa extends EstadisticaJugador {
         super(socio, partido);
     }
 
+    @Override
+    public boolean esDeDeporteIndividual() {
+        return true;
+    }
+
     public void registrarSetGanado() {
         setsGanados++;
     }
